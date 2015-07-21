@@ -1,0 +1,18 @@
+# depslib dependency file v1.0
+1437431282 source:/home/aviclaws/Documents/EC327/Project/Curling/src/Stone.cpp
+	"Stone.h"
+	<stdlib.h>
+	<math.h>
+	<iostream>
+
+1437435372 /home/aviclaws/Documents/EC327/Project/Curling/include/Stone.h
+	<SFML/Graphics.hpp>
+	<string.h>
+
+1437436400 source:/home/aviclaws/Documents/EC327/Project/Curling/main.cpp
+	<SFML/Graphics.hpp>
+	<stdlib.h>
+	<math.h>
+	<iostream>
+	<Stone.h>
+

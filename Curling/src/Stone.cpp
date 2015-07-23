@@ -3,6 +3,9 @@
 #include <math.h>
 #include <iostream>
 
+#define PI 3.14159265
+
+
 using namespace std;
 
 int Stone::NumofStones = 0;
@@ -27,22 +30,22 @@ Stone::Stone()
 {
     this->setRadius(radius);
     this->setOrigin(radius,radius);
-    //this->setPosition(rand()%400+50,rand()%400+50);
     this->setOutlineColor(sf::Color(160,160,160));
     this->setOutlineThickness(2.0);
     if (NumofStones%2>0)
     {
         this->setFillColor(c[0]);
         this->setPosition(1000,165/2);
-        this->setInitialVelocity(-2.5,0);
+        this->setInitialSpeed(2);
+        this->setInitialDirection(0);
     }
     else
     {
         this->setFillColor(c[1]);
         this->setPosition(250,165/2-2);
-        this->setInitialVelocity(-.5,0);
+        this->setInitialSpeed(.5);
+        this->setInitialDirection(0);
     }
-    //this->setInitialVelocity();
     NumofStones++;
 }
 
@@ -62,17 +65,7 @@ float Stone::getDistance(Stone s_o)
 
 }
 
-bool Stone::positionTaken(Stone s_o)
-{
-    if(this->getGlobalBounds().intersects(s_o.getGlobalBounds()))
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
+
 
 bool Stone::isWithinWindow(sf::Vector2u ws)
 {
@@ -87,45 +80,67 @@ bool Stone::isWithinWindow(sf::Vector2u ws)
     }
     return true;
 }
-
-void Stone::putInOpenSpot(Stone s_o[],int i, const int NUM_OF_STONES)
+void Stone::setFriction(float f)
 {
-    int position_check = 0;
-    while (position_check < NUM_OF_STONES)
+    friction = f;
+}
+
+void Stone::setSpin(float s)
+{
+    spin = s;
+}
+
+void Stone::setInitialSpeed(float e)
+{
+    speed = e;
+}
+
+void Stone::setSpeed()
+{
+    if (speed > 0)
     {
-        for (int q=0; q<NUM_OF_STONES; q++)
-        {
-            if (i!=q && this->positionTaken(s_o[q]))
-            {
-                this->setPosition(rand()%400+50,rand()%400+50);
-                position_check = 0;
-            }
-            else
-            {
-                position_check++;
-            }
-        }
+        speed -= friction;
+    }
+    else
+    {
+        speed = 0;
     }
 }
 
-void Stone::setInitialVelocity()
+void Stone::setInitialDirection(float d)
 {
-
-    //v.x=randMToN(-4,0);
-    //v.y=randMToN(-0.5,0.5);
-
-    //v.x = randMToN(-10.0/6.0,10.0/6.0);
-    //v.y = randMToN(-10.0/6.0,10.0/6.0);
-
-    v.x = -3.0;
-    v.y = 0.0;
-
+    direction = d;
 }
 
-void Stone::setInitialVelocity(float vx_i, float vy_i)
+void Stone::setDirection()
 {
-    v.x=vx_i;
-    v.y=vy_i;
+    direction -= spin;
+}
+
+
+void Stone::setVelocity()
+{
+
+    v.x=-1*speed*cos(direction);
+    v.y=speed*sin(direction);
+
+    if (v.x>0)
+    {
+        v.x -= friction;
+    }
+    else if (v.x<0)
+    {
+        v.x += friction;
+    }
+    if (v.y>0)
+    {
+        v.y -= friction;
+    }
+    else if (v.y<0)
+    {
+        v.y += friction;
+    }
+
 
 }
 
@@ -134,10 +149,6 @@ sf::Vector2f Stone::getVelocity()
     return v;
 }
 
-/*void Stone::makeMove()
-{
-    move(v.x,v.y);
-}*/
 
 void Stone::makeMove(float step)
 {
@@ -147,61 +158,17 @@ void Stone::makeMove(float step)
 bool Stone::checkWallCollision(sf::Vector2u ws)
 {
     pos = this->getPosition();
-    if (((pos.x-radius)<0 || (pos.x+radius)>ws.x) && !wall_lr)
+    if (((pos.x+radius)<0 || (pos.x-radius)>ws.x))
     {
-        wall_lr = true;
         return true;
     }
-    if (((pos.y-radius)<0 || (pos.y+radius)>ws.y) && !wall_tb)
+    if (((pos.y+radius)<0 || (pos.y-radius)>ws.y))
     {
-        wall_tb = true;
         return true;
     }
-    wall_lr = tooCloseWall_lr(ws);
-    wall_tb = tooCloseWall_tb(ws);
     return false;
 }
 
-bool Stone::tooCloseWall_lr(sf::Vector2u ws)
-{
-    //pos = this->getPosition();
-    if ((pos.x-radius)<0 || (pos.x+radius)>ws.x)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-bool Stone::tooCloseWall_tb(sf::Vector2u ws)
-{
-    //pos = this->getPosition();
-    if ((pos.y-radius)<0 || (pos.y+radius)>ws.y)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-
-}
-
-
-void Stone::setVelocity_w(sf::Vector2u ws)
-{
-    pos = this->getPosition();
-    if ((pos.x-radius)<0 || (pos.x+radius)>ws.x)
-    {
-        v.x*=-1;
-    }
-    if ((pos.y-radius)<0 || (pos.y+radius)>ws.y)
-    {
-        v.y*=-1;
-    }
-}
 
 bool Stone::checkStoneCollision(Stone s_o)
 {
@@ -221,7 +188,7 @@ void Stone::setVelocity_s(sf::Vector2f scv, sf::Vector2f svp)
 }
 
 
-void Stone::friction()
+/*void Stone::friction()
 {
     float friction_coef = 9.8*.0168/60;
     if (v.x>0)
@@ -240,4 +207,4 @@ void Stone::friction()
     {
         v.y = v.y + friction_coef;
     }
-}
+}*/

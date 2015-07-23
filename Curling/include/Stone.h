@@ -16,7 +16,7 @@ class Stone:public sf::CircleShape
 
         void makeMove(float step=1.0);
 
-        void setFriction(float f=9.81*.0168/120);
+        void setFriction(float f=9.81*.0168/60);
         void setSpin(float s=0);
         void setInitialSpeed(float e);
         void setSpeed();

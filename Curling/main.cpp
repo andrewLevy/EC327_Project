@@ -9,17 +9,18 @@ using namespace std;
 
 int main()
 {
-    sf::Time t1=sf::seconds(1.0/120.0);
+    sf::Time t1=sf::seconds(1.0/30.0);
     sf::Time t2;
     sf::Clock myclock;
 
     // Create the main window
-    const int WINDOW_WIDTH = 1200;
-    const int WINDOW_HEIGHT = 165;
-    const int NUM_OF_STONES = 2;
+    const int BOARD_WIDTH = 1200;
+    const int BOARD_HEIGHT = 165;
+    const int NUM_OF_STONES = 16;
     const int CHECK = 20;
 
-    //nt position_check = 0;
+    int Stone_inPlay = -1;
+
     char Play_Mode = 'B';
     char last_Mode = 'B';
     bool Changed_Mode = false;
@@ -27,22 +28,22 @@ int main()
     sf::RenderWindow app(sf::VideoMode(1400, 500), "SFML window");
 
     //Create board
-    sf::CircleShape circle[4];
+    sf::CircleShape Targets[4];
     float radius[4] = {60,40,20,5};
-    sf::Color c[4] = {sf::Color::Blue, sf::Color::White, sf::Color::Red, sf::Color::White};
-    sf::RectangleShape lines[5];
-    sf::Vector2f Lpos[5] = {sf::Vector2f(0,WINDOW_HEIGHT/2-.5),sf::Vector2f(390-2,0),sf::Vector2f(180-.5,0),sf::Vector2f(1110-2,0),sf::Vector2f(0,WINDOW_HEIGHT)};
-    sf::Vector2f Lsize[5] = {sf::Vector2f(WINDOW_WIDTH,1),sf::Vector2f(4,WINDOW_HEIGHT),sf::Vector2f(1,WINDOW_HEIGHT),sf::Vector2f(4,WINDOW_HEIGHT),sf::Vector2f(WINDOW_WIDTH,4)};
+    sf::Color T[4] = {sf::Color::Blue, sf::Color::White, sf::Color::Red, sf::Color::White};
+    sf::RectangleShape lines[7];
+    sf::Vector2f Lpos[7] = {sf::Vector2f(0,BOARD_HEIGHT/2-.5),sf::Vector2f(390-2,0),sf::Vector2f(180-.5,0),sf::Vector2f(1110-2,0),sf::Vector2f(0,BOARD_HEIGHT),sf::Vector2f(240,BOARD_HEIGHT/2+15),sf::Vector2f(240,BOARD_HEIGHT/2-15)};
+    sf::Vector2f Lsize[7] = {sf::Vector2f(1110,1),sf::Vector2f(4,BOARD_HEIGHT),sf::Vector2f(1,BOARD_HEIGHT),sf::Vector2f(4,BOARD_HEIGHT),sf::Vector2f(BOARD_WIDTH,4),sf::Vector2f(1110-240,.5),sf::Vector2f(1110-240,.5)};
     for (int i=0; i<4; i++)
     {
-        circle[i].setRadius(radius[i]);
-        circle[i].setOrigin(radius[i],radius[i]);
-        circle[i].setFillColor(c[i]);
-        circle[i].setPosition(180,WINDOW_HEIGHT/2);
-        circle[i].setOutlineColor(sf::Color::Black);
-        circle[i].setOutlineThickness(2.0);
+        Targets[i].setRadius(radius[i]);
+        Targets[i].setOrigin(radius[i],radius[i]);
+        Targets[i].setFillColor(T[i]);
+        Targets[i].setPosition(180,BOARD_HEIGHT/2);
+        Targets[i].setOutlineColor(sf::Color::Black);
+        Targets[i].setOutlineThickness(2.0);
     }
-    for (int i=0; i<5; i++)
+    for (int i=0; i<7; i++)
     {
         lines[i].setSize(Lsize[i]);
         lines[i].setFillColor(sf::Color::Black);
@@ -51,11 +52,12 @@ int main()
 
     //Create Stone bounce stones
     Stone s_b[NUM_OF_STONES];
+    //Stone s_r[NUM_OF_STONES];
 
-    //Create Stone test stones
-    Stone s_t[2];
-
-    sf::Vector2u window_size = app.getSize();
+    //sf::Vector2u window_size = app.getSize();
+    sf::Vector2u window_size;
+    window_size.x = BOARD_WIDTH;
+    window_size.y = BOARD_HEIGHT;
 
 	// Start the game loop
     while (app.isOpen())
@@ -76,34 +78,42 @@ int main()
         }
 
         // Draw the board
-        for (int c=0; c<4; c++)
+        for (int t=0; t<4; t++)
         {
-            app.draw(circle[c]);
+            app.draw(Targets[t]);
         }
-        for (int l=0; l<5; l++)
+        for (int l=0; l<7; l++)
         {
             app.draw(lines[l]);
         }
+        for (int s=Stone_inPlay+1; s<16; s++)
+        {
+            app.draw(s_b[s]);
+        }
+
 
         // game mode detection
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::B))
         {
-            Play_Mode = 'R';
+            Play_Mode = 'B';
             if (last_Mode != Play_Mode)
             {
                 last_Mode = Play_Mode;
                 Changed_Mode = true;
             }
         }
-
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
+        {
+            if (Stone_inPlay < 16)
+            {
+                Stone_inPlay++;
+                s_b[Stone_inPlay].setPosition(1110,BOARD_HEIGHT/2);
+                s_b[Stone_inPlay].setInitialSpeed(1.0+Stone_inPlay/10.0);
+            }
+        }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
         {
             Play_Mode = 'P';
-            /*if (last_Mode != Play_Mode)
-            {
-                last_Mode = Play_Mode;
-                Changed_Mode = true;
-            }*/
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
         {
@@ -131,7 +141,7 @@ int main()
 
                 for (int bCheck=0; bCheck<=CHECK; bCheck++)
                 {
-                    for (int g=0; g<NUM_OF_STONES; g++)
+                    for (int g=0; g<Stone_inPlay; g++)
                     {
                         if (g!=b)
                         {
@@ -163,17 +173,9 @@ int main()
         {
             while (Play_Mode =='P')
             {
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
-                {
-                    Play_Mode ='R';
-                }
-                else if (sf::Keyboard::isKeyPressed(sf::Keyboard::B))
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::B))
                 {
                     Play_Mode ='B';
-                }
-                else if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
-                {
-                    Play_Mode = 'T';
                 }
                 else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
                 {

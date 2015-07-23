@@ -32,18 +32,18 @@ Stone::Stone()
     this->setOrigin(radius,radius);
     this->setOutlineColor(sf::Color(160,160,160));
     this->setOutlineThickness(2.0);
-    if (NumofStones%2>0)
+    if (NumofStones<8)
     {
-        this->setFillColor(c[0]);
-        this->setPosition(1000,165/2);
-        this->setInitialSpeed(2);
+        this->setFillColor(sf::Color::Blue);
+        this->setPosition(1125+NumofStones*15,15);
+        this->setInitialSpeed(0);
         this->setInitialDirection(0);
     }
     else
     {
-        this->setFillColor(c[1]);
-        this->setPosition(250,165/2-2);
-        this->setInitialSpeed(.5);
+        this->setFillColor(sf::Color::Red);
+        this->setPosition(1125+(NumofStones-8)*15,150);
+        this->setInitialSpeed(0);
         this->setInitialDirection(0);
     }
     NumofStones++;

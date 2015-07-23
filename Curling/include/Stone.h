@@ -21,6 +21,7 @@ class Stone:public sf::CircleShape
         void setInitialVelocity(float vx_i, float vy_i);
         void setVelocity_s(sf::Vector2f scv, sf::Vector2f svp);
         void setVelocity_w(sf::Vector2u ws);
+        void friction();
         bool checkWallCollision(sf::Vector2u ws);
         bool checkStoneCollision(Stone s_o);
         //bool tooCloseStone(Stone s_o);

@@ -20,7 +20,7 @@ int main()
     // Create the main window
     const int WINDOW_WIDTH = 1200;
     const int WINDOW_HEIGHT = 165;
-    const int NUM_OF_STONES = 10;
+    const int NUM_OF_STONES = 2;
     const int CHECK = 20;
 
     //nt position_check = 0;
@@ -181,6 +181,7 @@ int main()
             {
                 app.draw(s_b[b]);
                 s_b[b].makeMove();
+                s_b[b].friction();
                 for (int bCheck=0; bCheck<=CHECK; bCheck++)
                 {
                     if(s_b[b].checkWallCollision(window_size))

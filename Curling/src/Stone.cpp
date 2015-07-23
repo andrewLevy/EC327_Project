@@ -27,18 +27,22 @@ Stone::Stone()
 {
     this->setRadius(radius);
     this->setOrigin(radius,radius);
-    this->setPosition(rand()%400+50,rand()%400+50);
+    //this->setPosition(rand()%400+50,rand()%400+50);
     this->setOutlineColor(sf::Color(160,160,160));
     this->setOutlineThickness(2.0);
     if (NumofStones%2>0)
     {
         this->setFillColor(c[0]);
+        this->setPosition(1000,165/2);
+        this->setInitialVelocity(-2.5,0);
     }
     else
     {
         this->setFillColor(c[1]);
+        this->setPosition(250,165/2-2);
+        this->setInitialVelocity(-.5,0);
     }
-    this->setInitialVelocity();
+    //this->setInitialVelocity();
     NumofStones++;
 }
 
@@ -107,11 +111,14 @@ void Stone::putInOpenSpot(Stone s_o[],int i, const int NUM_OF_STONES)
 void Stone::setInitialVelocity()
 {
 
-    v.x=randMToN(-8.0,8.0);
-    v.y=randMToN(-8.0,8.0);
+    //v.x=randMToN(-4,0);
+    //v.y=randMToN(-0.5,0.5);
 
     //v.x = randMToN(-10.0/6.0,10.0/6.0);
     //v.y = randMToN(-10.0/6.0,10.0/6.0);
+
+    v.x = -3.0;
+    v.y = 0.0;
 
 }
 
@@ -214,3 +221,23 @@ void Stone::setVelocity_s(sf::Vector2f scv, sf::Vector2f svp)
 }
 
 
+void Stone::friction()
+{
+    float friction_coef = 9.8*.0168/60;
+    if (v.x>0)
+    {
+        v.x = v.x - friction_coef;
+    }
+    else if (v.x<0)
+    {
+        v.x = v.x + friction_coef;
+    }
+    if (v.y>0)
+    {
+        v.y = v.y - friction_coef;
+    }
+    else if (v.y<0)
+    {
+        v.y = v.y + friction_coef;
+    }
+}

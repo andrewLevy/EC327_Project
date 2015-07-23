@@ -16,3 +16,20 @@
 	<iostream>
 	<Stone.h>
 
+1437616331 source:/home/aviclaws/Documents/EC327/Project/EC327_Project/Curling/main.cpp
+	<SFML/Graphics.hpp>
+	<stdlib.h>
+	<math.h>
+	<iostream>
+	<Stone.h>
+
+1437615791 /home/aviclaws/Documents/EC327/Project/EC327_Project/Curling/include/Stone.h
+	<SFML/Graphics.hpp>
+	<string.h>
+
+1437617098 source:/home/aviclaws/Documents/EC327/Project/EC327_Project/Curling/src/Stone.cpp
+	"Stone.h"
+	<stdlib.h>
+	<math.h>
+	<iostream>
+

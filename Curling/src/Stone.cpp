@@ -28,23 +28,27 @@ float randMToN(float M, float N)
 
 Stone::Stone()
 {
-    this->setRadius(radius);
-    this->setOrigin(radius,radius);
-    this->setOutlineColor(sf::Color(160,160,160));
-    this->setOutlineThickness(2.0);
+    setRadius(radius + 2);
+    setOrigin(radius + 2,radius + 2);
+    setOutlineColor(sf::Color(160,160,160));
+    setOutlineThickness(-2.0);
     if (NumofStones<8)
     {
-        this->setFillColor(sf::Color::Blue);
-        this->setPosition(1125+NumofStones*15,15);
-        this->setInitialSpeed(0);
-        this->setInitialDirection(0);
+        setFillColor(sf::Color::Blue);
+        setPosition(1125+NumofStones*15,15);
+        //this->setInitialSpeed(0);
+        //this->setInitialDirection(0);
+        speed = 0;
+        direction = 0;
     }
     else
     {
-        this->setFillColor(sf::Color::Yellow);
-        this->setPosition(1125+(NumofStones-8)*15,150);
-        this->setInitialSpeed(0);
-        this->setInitialDirection(0);
+        setFillColor(sf::Color::Yellow);
+        setPosition(1125+(NumofStones-8)*15,150);
+        //this->setInitialSpeed(0);
+        //this->setInitialDirection(0);
+        speed = 0;
+        direction = 0;
     }
     NumofStones++;
 }
@@ -97,7 +101,7 @@ void Stone::setInitialSpeed(float e)
 
 void Stone::setSpeed()
 {
-    if (speed > 0)
+    if (speed - friction > 0)
     {
         speed -= friction;
     }
@@ -119,9 +123,19 @@ void Stone::setInitialDirection(float d)
 
 void Stone::setDirection()
 {
-    direction -= spin;
+    direction -= spin;;
 }
 
+
+float Stone::getDirection()
+{
+    return direction;
+}
+
+float Stone::getSpin()
+{
+    return spin;
+}
 
 void Stone::setVelocity()
 {
@@ -129,6 +143,7 @@ void Stone::setVelocity()
     v.x=-1*speed*cos(direction);
     v.y=speed*sin(direction);
 
+    /*
     if (v.x>0)
     {
         v.x -= friction;
@@ -144,7 +159,7 @@ void Stone::setVelocity()
     else if (v.y<0)
     {
         v.y += friction;
-    }
+    }*/
 
 
 }

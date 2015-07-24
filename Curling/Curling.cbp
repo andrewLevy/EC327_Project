@@ -42,6 +42,9 @@
 			<Add option="-Wall" />
 		</Compiler>
 		<Unit filename="cb.bmp" />
+		<Unit filename="clockwise.png" />
+		<Unit filename="clockwise_v2.png" />
+		<Unit filename="counterclockwise.png" />
 		<Unit filename="include/Stone.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/Stone.cpp" />

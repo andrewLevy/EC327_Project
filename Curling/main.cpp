@@ -31,6 +31,10 @@ int main()
     const int BOARD_HEIGHT = 165;
     const int NUM_OF_STONES = 16;
     const int CHECK = 20;
+    // Change below constant to update minimum spin
+    const float DEGREE_PER_TURN = 10;
+    const float TIME_PER_TURN = 10;
+    const float MIN_SPIN = DEGREE_PER_TURN * (PI / 180) / 8 / 60;
 
     bool Stone_inPlay = false;
     int Stone_turn = -1;
@@ -64,7 +68,7 @@ int main()
         lines[i].setPosition(Lpos[i]);
     }
 
-    //Create Stone bounce stones
+    //Create stone array
     Stone s_b[NUM_OF_STONES];
 
     //Sweeping sign
@@ -89,6 +93,34 @@ int main()
     float arrow_h = arrow.getTextureRect().height;
     arrow.setOrigin(arrow_w,arrow_h/2-5);
     arrow.setPosition(1110,BOARD_HEIGHT/2);
+
+
+    // Launch rotation icons
+    sf::Texture clockwiseTexture;
+    if (!clockwiseTexture.loadFromFile("clockwise_v2.png"))
+    {
+        return EXIT_FAILURE;
+    }
+    sf::Sprite clockwiseArrow(clockwiseTexture);
+    clockwiseArrow.scale(0.2,0.2);
+    float clockwise_w = clockwiseArrow.getTextureRect().width;
+    float clockwise_h = clockwiseArrow.getTextureRect().height;
+    clockwiseArrow.setOrigin(clockwise_w / 2,clockwise_h / 2);
+    clockwiseArrow.setPosition(1325 - clockwise_w / 2,BOARD_HEIGHT/2);
+
+    sf::Texture counterClockwiseTexture;
+    if (!counterClockwiseTexture.loadFromFile("counterclockwise_v2.png"))
+    {
+        return EXIT_FAILURE;
+    }
+    sf::Sprite counterClockwiseArrow(counterClockwiseTexture);
+    counterClockwiseArrow.scale(0.1,0.1);
+    float counterClockwise_w = counterClockwiseArrow.getTextureRect().width;
+    float counterClockwise_h = counterClockwiseArrow.getTextureRect().height;
+    counterClockwiseArrow.setOrigin(counterClockwise_w / 2,counterClockwise_h / 2);
+    counterClockwiseArrow.setPosition(1393 - counterClockwise_w / 2,BOARD_HEIGHT/2);
+    int spinCounter = 0;
+
 
 
 
@@ -120,6 +152,7 @@ int main()
 
         if (!Stone_inPlay)
         {
+            // Draw array with length and direction as specified by user
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && (arrow.getRotation() > 315 || arrow.getRotation() <= 45))
             {
                 arrow.rotate(-1);
@@ -137,16 +170,53 @@ int main()
                 arrow.scale(.95,1.0);
             }
             app.draw(arrow);
+
+            // Draw and rotate rotation icon per magnitude of spin chosen by user
+            if(sf::Keyboard::isKeyPressed(sf::Keyboard::J))
+            {
+                if(spinCounter <= 3)
+                {
+                    spinCounter++;
+                    clockwiseArrow.setPosition(clockwiseArrow.getPosition().x, BOARD_HEIGHT / 2 - spinCounter * 12);
+                    counterClockwiseArrow.setPosition(counterClockwiseArrow.getPosition().x, BOARD_HEIGHT / 2 - spinCounter * 10);
+                }
+            }
+            else if(sf::Keyboard::isKeyPressed(sf::Keyboard::F))
+            {
+                if(spinCounter >= -3)
+                {
+                    spinCounter--;
+                    counterClockwiseArrow.setPosition(counterClockwiseArrow.getPosition().x, BOARD_HEIGHT / 2 - spinCounter * 12);
+                    clockwiseArrow.setPosition(clockwiseArrow.getPosition().x, BOARD_HEIGHT / 2 - spinCounter * 10);
+                }
+            }
+
+            if(spinCounter >= 0)
+            {
+                app.draw(clockwiseArrow);
+                clockwiseArrow.rotate(spinCounter * 5);
+            }
+            else
+            {
+                app.draw(counterClockwiseArrow);
+                counterClockwiseArrow.rotate(spinCounter * 5);
+            }
         }
+
+        // Draw House
         for (int t=0; t<4; t++)
         {
             app.draw(Targets[t]);
         }
+
+        // Draw boundary lines
         for (int l=0; l<7; l++)
         {
             app.draw(lines[l]);
         }
-        for (int s=Stone_inPlay+1; s<16; s++)
+
+        // Draw stone array
+        for (int s=0; s<16; s++)
         {
             app.draw(s_b[s]);
         }
@@ -162,16 +232,33 @@ int main()
                 Changed_Mode = true;
             }
         }
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && !checkPlay_Status(s_b,16))
         {
             if (Stone_turn < 16)
             {
+                // Begin turn by setting initial speed, direction, and speed to values specified by user
                 Stone_turn++;
-                Stone_inPlay = true;
+                //Stone_inPlay = true;
                 s_b[Stone_turn].setPosition(1110,BOARD_HEIGHT/2);
                 s_b[Stone_turn].setInitialSpeed(arrow.getScale().x*50);
+                s_b[Stone_turn].setSpin(spinCounter * MIN_SPIN);
+
                 //cout << arrow.getScale().x << endl;
-                s_b[Stone_turn].setInitialDirection(-1*arrow.getRotation()*PI/180);
+
+                if(arrow.getRotation() <= 45)
+                {
+                    s_b[Stone_turn].setInitialDirection(-1*arrow.getRotation()*PI/180);
+                }
+                else
+                {
+                    s_b[Stone_turn].setInitialDirection((360 - arrow.getRotation())*PI/180);
+                }
+                arrow.setRotation(0);
+
+                // Return spin icons to default settings
+                spinCounter = 0;
+                clockwiseArrow.setPosition(1325 - clockwise_w / 2,BOARD_HEIGHT/2);
+                counterClockwiseArrow.setPosition(1393 - counterClockwise_w / 2,BOARD_HEIGHT/2);
             }
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
@@ -199,7 +286,7 @@ int main()
                 {
                     s_b[b].setFriction();
                 }
-                s_b[b].setSpin();
+                //s_b[b].setSpin();
                 s_b[b].setSpeed();
                 s_b[b].setDirection();
                 s_b[b].setVelocity();

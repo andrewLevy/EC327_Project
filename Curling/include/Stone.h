@@ -24,6 +24,9 @@ class Stone:public sf::CircleShape
         void setInitialDirection(float d);
         void setDirection();
 
+        float getDirection();
+        float getSpin();
+
 
         void setVelocity();
 

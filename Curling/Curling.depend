@@ -33,3 +33,20 @@
 	<math.h>
 	<iostream>
 
+1437765015 source:/home/levya/Desktop/EC327_Project/Curling/main.cpp
+	<SFML/Graphics.hpp>
+	<stdlib.h>
+	<math.h>
+	<iostream>
+	<Stone.h>
+
+1437764257 /home/levya/Desktop/EC327_Project/Curling/include/Stone.h
+	<SFML/Graphics.hpp>
+	<string.h>
+
+1437764257 source:/home/levya/Desktop/EC327_Project/Curling/src/Stone.cpp
+	"Stone.h"
+	<stdlib.h>
+	<math.h>
+	<iostream>
+

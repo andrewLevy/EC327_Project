@@ -4,12 +4,25 @@
 #include <iostream>
 #include <Stone.h>
 
+#define PI 3.14159265
+
 using namespace std;
 
+bool checkPlay_Status(Stone s[], int n)
+{
+    for (int i=0; i<n; i++)
+    {
+        if (s[i].getSpeed() != 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 int main()
 {
-    sf::Time t1=sf::seconds(1.0/30.0);
+    sf::Time t1=sf::seconds(1.0/60.0);
     sf::Time t2;
     sf::Clock myclock;
 
@@ -19,7 +32,8 @@ int main()
     const int NUM_OF_STONES = 16;
     const int CHECK = 20;
 
-    int Stone_inPlay = -1;
+    bool Stone_inPlay = false;
+    int Stone_turn = -1;
 
     char Play_Mode = 'B';
     char last_Mode = 'B';
@@ -52,7 +66,31 @@ int main()
 
     //Create Stone bounce stones
     Stone s_b[NUM_OF_STONES];
-    //Stone s_r[NUM_OF_STONES];
+
+    //Sweeping sign
+    sf::Font font;
+    if (!font.loadFromFile("sansation.ttf"))
+    {
+        return EXIT_FAILURE;
+    }
+    sf::Text sweep_message("Sweeping",font,15);
+    sweep_message.setPosition(1000,145);
+    sweep_message.setColor(sf::Color::Red);
+
+    //launch arrow
+    sf::Texture texture;
+    if (!texture.loadFromFile("arrow.png"))
+    {
+        return EXIT_FAILURE;
+    }
+    sf::Sprite arrow(texture);
+    arrow.scale(0.1,0.1);
+    float arrow_w = arrow.getTextureRect().width;
+    float arrow_h = arrow.getTextureRect().height;
+    arrow.setOrigin(arrow_w,arrow_h/2-5);
+    arrow.setPosition(1110,BOARD_HEIGHT/2);
+
+
 
     //sf::Vector2u window_size = app.getSize();
     sf::Vector2u window_size;
@@ -78,6 +116,28 @@ int main()
         }
 
         // Draw the board
+        Stone_inPlay = checkPlay_Status(s_b, NUM_OF_STONES);
+
+        if (!Stone_inPlay)
+        {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && (arrow.getRotation() > 315 || arrow.getRotation() <= 45))
+            {
+                arrow.rotate(-1);
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && (arrow.getRotation() >= 315 || arrow.getRotation() < 45))
+            {
+                arrow.rotate(1);
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && arrow.getScale().x < .2)
+            {
+                arrow.scale(1.05,1.0);
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && arrow.getScale().x > .05)
+            {
+                arrow.scale(.95,1.0);
+            }
+            app.draw(arrow);
+        }
         for (int t=0; t<4; t++)
         {
             app.draw(Targets[t]);
@@ -104,11 +164,14 @@ int main()
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
         {
-            if (Stone_inPlay < 16)
+            if (Stone_turn < 16)
             {
-                Stone_inPlay++;
-                s_b[Stone_inPlay].setPosition(1110,BOARD_HEIGHT/2);
-                s_b[Stone_inPlay].setInitialSpeed(1.0+Stone_inPlay/10.0);
+                Stone_turn++;
+                Stone_inPlay = true;
+                s_b[Stone_turn].setPosition(1110,BOARD_HEIGHT/2);
+                s_b[Stone_turn].setInitialSpeed(arrow.getScale().x*50);
+                //cout << arrow.getScale().x << endl;
+                s_b[Stone_turn].setInitialDirection(-1*arrow.getRotation()*PI/180);
             }
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
@@ -127,7 +190,15 @@ int main()
             for (int b=0; b<NUM_OF_STONES; b++)
             {
                 app.draw(s_b[b]);
-                s_b[b].setFriction();
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+                {
+                    s_b[b].setFriction(0.1*5*9.81*.0168/60);
+                    app.draw(sweep_message);
+                }
+                else
+                {
+                    s_b[b].setFriction();
+                }
                 s_b[b].setSpin();
                 s_b[b].setSpeed();
                 s_b[b].setDirection();
@@ -141,7 +212,7 @@ int main()
 
                 for (int bCheck=0; bCheck<=CHECK; bCheck++)
                 {
-                    for (int g=0; g<Stone_inPlay; g++)
+                    for (int g=0; g<Stone_turn; g++)
                     {
                         if (g!=b)
                         {

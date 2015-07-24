@@ -12,11 +12,12 @@ class Stone:public sf::CircleShape
         virtual ~Stone();
         int getNumofStones();
         float getDistance(Stone s_o);
+        float getSpeed();
         sf::Vector2f getVelocity();
 
         void makeMove(float step=1.0);
 
-        void setFriction(float f=9.81*.0168/60);
+        void setFriction(float f=5*9.81*.0168/60);
         void setSpin(float s=0);
         void setInitialSpeed(float e);
         void setSpeed();

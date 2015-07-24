@@ -41,7 +41,7 @@ Stone::Stone()
     }
     else
     {
-        this->setFillColor(sf::Color::Red);
+        this->setFillColor(sf::Color::Yellow);
         this->setPosition(1125+(NumofStones-8)*15,150);
         this->setInitialSpeed(0);
         this->setInitialDirection(0);
@@ -105,6 +105,11 @@ void Stone::setSpeed()
     {
         speed = 0;
     }
+}
+
+float Stone::getSpeed()
+{
+    return speed;
 }
 
 void Stone::setInitialDirection(float d)

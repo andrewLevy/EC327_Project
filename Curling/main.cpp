@@ -471,6 +471,25 @@ int main()
                 s_b[stoneNumber].setPosition(-5,-5);
             }
 
+            // Add sign above closest stone
+            if(!checkPlay_Status(s_b,NUM_OF_STONES))
+            {
+                int closest = findClosestStone(s_b,NUM_OF_STONES);
+                if(closest != -1)
+                {
+                    sf::CircleShape triangle(5,3);
+                    triangle.setOrigin(triangle.getRadius(), triangle.getRadius());
+                    triangle.rotate(180);
+                    if(closest % 2 == 0)
+                        triangle.setFillColor(sf::Color::Green);
+                    else
+                        triangle.setFillColor(sf::Color::Yellow);
+                    triangle.setPosition(s_b[closest].getPosition().x, s_b[closest].getPosition().y - s_b[closest].getRadius() - triangle.getRadius() - 2);
+                    app.draw(triangle);
+                    houseZoom.draw(triangle);
+                }
+            }
+
             // Determine winner of end and number of points earned if finished end
             if(Stone_turn == NUM_OF_STONES && !checkPlay_Status(s_b,NUM_OF_STONES) && winnerDeclaredCounter == 0)
             {

@@ -33,6 +33,14 @@ float getDistance(sf::Vector2f vector1, sf::Vector2f vector2)
     return sqrt(x_difference * x_difference + y_difference * y_difference);
 }
 
+bool inHouse(Stone stone1, sf::CircleShape target)
+{
+    if(getDistance(stone1.getPosition(), target.getPosition()) <= target.getRadius())
+        return true;
+    else
+        return false;
+}
+
 int findClosestStone(Stone stone_array[], const int NUM_OF_STONES)
 {
     // Add closest stone(s) to vector
@@ -94,20 +102,20 @@ int findClosestStone(Stone stone_array[], const int NUM_OF_STONES)
     return closestStones[0];
 }
 
-int getPoints(Stone winning_team[], const float closest_opponent)
+int getPoints(Stone winning_team[], const float closest_opponent, sf::CircleShape target)
 {
     int points = 0;
 
     sf::Vector2f buttonPosition(180,BOARD_HEIGHT / 2);
     for(int i = 0; i < 8; i++)
     {
-        if(getDistance(winning_team[i].getPosition(), buttonPosition) < closest_opponent)
+        if(inHouse(winning_team[i], target) && getDistance(winning_team[i].getPosition(), buttonPosition) < closest_opponent)
             points++;
     }
     return points;
 }
 
-int calculatePointsEarned(const int winner, Stone team_even[], Stone team_odd[])
+int calculatePointsEarned(const int winner, Stone team_even[], Stone team_odd[], sf::CircleShape target)
 {
     int winning_team;
     if(winner % 2 == 0)
@@ -125,9 +133,9 @@ int calculatePointsEarned(const int winner, Stone team_even[], Stone team_odd[])
 
     // Calculate points earned by winning team
     if(winning_team == 0)
-        return getPoints(team_even, closest_opponent);
+        return getPoints(team_even, closest_opponent, target);
     else
-        return getPoints(team_odd, closest_opponent);
+        return getPoints(team_odd, closest_opponent, target);
 }
 
 int main()
@@ -471,11 +479,11 @@ int main()
                 s_b[stoneNumber].setPosition(-5,-5);
             }
 
-            // Add sign above closest stone
+            // Add marker above closest stone if in House
             if(!checkPlay_Status(s_b,NUM_OF_STONES))
             {
                 int closest = findClosestStone(s_b,NUM_OF_STONES);
-                if(closest != -1)
+                if(closest != -1 && inHouse(s_b[closest], Targets[0]))
                 {
                     sf::CircleShape triangle(5,3);
                     triangle.setOrigin(triangle.getRadius(), triangle.getRadius());
@@ -498,9 +506,8 @@ int main()
                 int winner = findClosestStone(s_b,NUM_OF_STONES);
 
                 // Determine number of points won if not a tie game
-
                 int points;
-                if(winner != -1)
+                if(winner != -1 && inHouse(s_b[winner], Targets[0]))
                 {
                     // Split up teams to find number of points earned
                     Stone team_even[8];
@@ -521,7 +528,7 @@ int main()
                         }
                     }
 
-                    points = calculatePointsEarned(winner,team_even, team_odd);
+                    points = calculatePointsEarned(winner,team_even, team_odd, Targets[0]);
                 }
 
 
@@ -538,7 +545,7 @@ int main()
                     cout << "Team B wins " << points << " points!" << endl;
                 }
                 // Display current score
-                cout << "Current Score: " << "Team A - " << team_A_points << " " << "Team B - " << team_B_points << endl;
+                cout << "Current Score - " << "Team A: " << team_A_points << " " << "Team B: " << team_B_points << endl;
             }
 
             // Begin new end if neither player has reached required number of points

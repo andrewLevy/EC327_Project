@@ -3,6 +3,7 @@
 #include <math.h>
 #include <iostream>
 #include <Stone.h>
+#include <vector>
 
 #define PI 3.14159265
 
@@ -32,26 +33,68 @@ float getDistance(sf::Vector2f vector1, sf::Vector2f vector2)
     return sqrt(x_difference * x_difference + y_difference * y_difference);
 }
 
-int findClosestStone(const Stone stone_array[], const int NUM_OF_STONES)
+int findClosestStone(Stone stone_array[], const int NUM_OF_STONES)
 {
+    // Add closest stone(s) to vector
     sf::Vector2f buttonPosition(180,BOARD_HEIGHT / 2);
     float closest_distance = getDistance(stone_array[0].getPosition(), buttonPosition);
-    int closest_stone = 0;
+    vector<int> closestStones;
+    if(stone_array[0].getStatus())
+        closestStones.push_back(0);
+    else
+        closestStones.push_back(-1);
 
     for(int i = 1; i < NUM_OF_STONES; i++)
     {
-        float next_distance = getDistance(stone_array[i].getPosition(), buttonPosition);
-        if(next_distance < closest_distance)
+        if(stone_array[i].getStatus())
         {
-            closest_distance = next_distance;
-            closest_stone = i;
+            float next_distance = getDistance(stone_array[i].getPosition(), buttonPosition);
+            if(next_distance == closest_distance)
+            {
+                if(closestStones[0] == -1)
+                {
+                    closestStones.clear();
+                    closestStones.push_back(i);
+                }
+                else
+                {
+                    closestStones.push_back(i);
+                }
+            }
+            else if(next_distance < closest_distance)
+            {
+                closest_distance = next_distance;
+                closestStones.clear();
+                closestStones.push_back(i);
+            }
         }
     }
 
-    return closest_stone;
+    // If tie determine if stones come from same or both teams
+    bool team_even = false;
+    bool team_odd = false;
+    if(closestStones.size() > 1)
+    {
+        for(int i = 0; i < closestStones.size(); i++)
+        {
+            if(closestStones[i] % 2 == 0)
+                team_even = true;
+            else
+                team_odd = true;
+        }
+
+        if(team_even && team_odd)
+        {
+            closestStones.clear();
+            closestStones.push_back(-1);
+        }
+    }
+
+    // There was a tie game if -1 is returned
+    return closestStones[0];
 }
 
-int getPoints(const Stone winning_team[], const float closest_opponent)
+int getPoints(Stone winning_team[], const float closest_opponent)
 {
     int points = 0;
 
@@ -64,7 +107,7 @@ int getPoints(const Stone winning_team[], const float closest_opponent)
     return points;
 }
 
-int calculatePointsEarned(const int winner,const Stone team_even[], const Stone team_odd[])
+int calculatePointsEarned(const int winner, Stone team_even[], Stone team_odd[])
 {
     int winning_team;
     if(winner % 2 == 0)
@@ -81,7 +124,6 @@ int calculatePointsEarned(const int winner,const Stone team_even[], const Stone 
         closest_opponent = getDistance(team_even[findClosestStone(team_even,8)].getPosition(),buttonPosition);
 
     // Calculate points earned by winning team
-    int points_earned = 0;
     if(winning_team == 0)
         return getPoints(team_even, closest_opponent);
     else
@@ -108,7 +150,10 @@ int main()
     char last_Mode = 'B';
     bool Changed_Mode = false;
 
-    sf::RenderWindow app(sf::VideoMode(1400, 500), "SFML window");
+    sf::RenderWindow app(sf::VideoMode(1400, 600), "SFML window");
+    sf::RenderWindow houseZoom(sf::VideoMode(350, 350), "House Zoom");
+    const sf::Vector2i houseZoomLocation(500,320);
+    houseZoom.setPosition(houseZoomLocation);
 
     //Create board
     // Create House
@@ -118,7 +163,7 @@ int main()
 
     // Create Boundary Lines
     sf::RectangleShape lines[7];
-    sf::Vector2f Lpos[7] = {sf::Vector2f(0,BOARD_HEIGHT/2 - 0.5),sf::Vector2f(390-2,0),sf::Vector2f(180-.5,0),sf::Vector2f(1110-2,0),sf::Vector2f(0,BOARD_HEIGHT - 4),sf::Vector2f(240,BOARD_HEIGHT/2+15),sf::Vector2f(240,BOARD_HEIGHT/2-15)};
+    sf::Vector2f Lpos[7] = {sf::Vector2f(0,BOARD_HEIGHT/2 - 0.5),sf::Vector2f(390-2,0),sf::Vector2f(180 -.5,0),sf::Vector2f(1110-2,0),sf::Vector2f(0,BOARD_HEIGHT - 4),sf::Vector2f(240,BOARD_HEIGHT/2+15),sf::Vector2f(240,BOARD_HEIGHT/2-15)};
     sf::Vector2f Lsize[7] = {sf::Vector2f(1110,1),sf::Vector2f(4,BOARD_HEIGHT),sf::Vector2f(1,BOARD_HEIGHT),sf::Vector2f(4,BOARD_HEIGHT),sf::Vector2f(BOARD_WIDTH,4),sf::Vector2f(1110-240,.5),sf::Vector2f(1110-240,.5)};
     for (int i=0; i<4; i++)
     {
@@ -127,7 +172,7 @@ int main()
         Targets[i].setFillColor(T[i]);
         Targets[i].setPosition(180,BOARD_HEIGHT/2);
         Targets[i].setOutlineColor(sf::Color::Black);
-        Targets[i].setOutlineThickness(2.0);
+        Targets[i].setOutlineThickness(-2.0);
     }
     for (int i=0; i<7; i++)
     {
@@ -197,7 +242,11 @@ int main()
     window_size.x = BOARD_WIDTH;
     window_size.y = BOARD_HEIGHT;
 
+    // Initialize Scoreboard Data
     int winnerDeclaredCounter = 0;
+    int points_to_win = 4;
+    int team_A_points = 0;
+    int team_B_points = 0;
 
 	// Start the game loop
     while (app.isOpen())
@@ -208,13 +257,17 @@ int main()
         {
             // Close window : exit
             if (event.type == sf::Event::Closed)
+            {
                 app.close();
+                houseZoom.close();
+            }
         }
 
         // Clear screen
         if (Play_Mode != 'P')
         {
             app.clear(sf::Color(255,255,255));
+            houseZoom.clear(sf::Color::White);
         }
 
         // Draw the board
@@ -277,20 +330,29 @@ int main()
         for (int t=0; t<4; t++)
         {
             app.draw(Targets[t]);
+            houseZoom.draw(Targets[t]);
         }
 
         // Draw boundary lines
         for (int l=0; l<7; l++)
         {
             app.draw(lines[l]);
+            houseZoom.draw(lines[l]);
         }
 
         // Draw stone array
         for (int s=0; s<16; s++)
         {
             app.draw(s_b[s]);
+            houseZoom.draw(s_b[s]);
         }
 
+        // Create a View
+        const sf::Vector2f buttonLocation(180,BOARD_HEIGHT / 2);
+        const sf::Vector2f viewSize(120,120);
+        sf::View view(buttonLocation,viewSize);
+        view.setViewport(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
+        houseZoom.setView(view);
 
         // game mode detection
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::B))
@@ -406,44 +468,70 @@ int main()
                 s_b[stoneNumber].setOutlineColor(sf::Color::White);
                 s_b[stoneNumber].setInitialSpeed(0);
                 s_b[stoneNumber].changeStatus();
-                //cout << s_b[stoneNumber].getSpeed() << endl;
-                s_b[stoneNumber].setPosition(-5,s_b[stoneNumber].getPosition().y);
+                s_b[stoneNumber].setPosition(-5,-5);
             }
 
-            // Determine winner and number of points earned if applicable
+            // Determine winner of end and number of points earned if finished end
             if(Stone_turn == NUM_OF_STONES && !checkPlay_Status(s_b,NUM_OF_STONES) && winnerDeclaredCounter == 0)
             {
                 winnerDeclaredCounter++;
                 // Determine winner
                 int winner = findClosestStone(s_b,NUM_OF_STONES);
 
-                // Determine number of points won
+                // Determine number of points won if not a tie game
 
-                // Split up teams to find number of points earned
-                Stone team_even[8];
-                Stone team_odd[8];
-                int evenCount = 0;
-                int oddCount = 0;
-                for(int i = 0; i < 16; i++)
+                int points;
+                if(winner != -1)
                 {
-                    if(i % 2 == 0)
+                    // Split up teams to find number of points earned
+                    Stone team_even[8];
+                    Stone team_odd[8];
+                    int evenCount = 0;
+                    int oddCount = 0;
+                    for(int i = 0; i < 16; i++)
                     {
-                        team_even[evenCount] = s_b[i];
-                        evenCount++;
+                        if(i % 2 == 0)
+                        {
+                            team_even[evenCount] = s_b[i];
+                            evenCount++;
+                        }
+                        else
+                        {
+                            team_odd[oddCount] = s_b[i];
+                            oddCount++;
+                        }
                     }
-                    else
-                    {
-                        team_odd[oddCount] = s_b[i];
-                        oddCount++;
-                    }
+
+                    points = calculatePointsEarned(winner,team_even, team_odd);
                 }
 
-                int points = calculatePointsEarned(winner,team_even, team_odd);
 
-                if(winner % 2 == 0)
+                if(winner == -1)
+                    cout << "Tie game! No points earned." << endl;
+                else if(winner % 2 == 0)
+                {
+                    team_A_points += points;
                     cout << "Team A wins " << points << " points!" << endl;
+                }
                 else
+                {
+                    team_B_points += points;
                     cout << "Team B wins " << points << " points!" << endl;
+                }
+            }
+
+            // Begin new end if neither player has reached required number of points
+            if(Stone_turn == NUM_OF_STONES && !checkPlay_Status(s_b,NUM_OF_STONES) && team_A_points < points_to_win && team_B_points < points_to_win)
+            {
+                Stone::resetNumberofStones();
+                Stone newStoneSet[NUM_OF_STONES];
+                for(int i = 0; i < 16; i++)
+                    s_b[i] = newStoneSet[i];
+                Stone_turn = 0;
+                //s_b[0].setFillColor(sf::Color::Green);
+                //s_b[1].setFillColor(sf::Color::Yellow);
+                //for(int i = 0; i < 16; i++)
+                    //cout << s_b[i].getPosition().x << " " << s_b[i].getPosition().y << " " << s_b[i].getFillColor().r.toInteger() << " " << s_b[i].getFillColor().g << " " << s_b[i].getFillColor().b << endl;
             }
 
                 /*for (int bCheck=0; bCheck<=CHECK; bCheck++)
@@ -495,6 +583,7 @@ int main()
         }
         // Update the window
         app.display();
+        houseZoom.display();
         sf::sleep(t1);
         t2=myclock.getElapsedTime();
         // std::cout << t2.asSeconds() << std::endl;

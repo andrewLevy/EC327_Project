@@ -9,8 +9,8 @@
 using namespace std;
 
 int Stone::NumofStones = 0;
-int evenNumberStones = 0;
-int oddNumberStones = 0;
+//int evenNumberStones = 0;
+//int oddNumberStones = 0;
 
 float dot_product(sf::Vector2f v1, sf::Vector2f v2)
 {
@@ -41,14 +41,14 @@ Stone::Stone()
     if(NumofStones % 2 == 0)
     {
         setFillColor(sf::Color::Green);
-        setPosition(1125+evenNumberStones*2*radius + evenNumberStones * 1,15);
-        evenNumberStones++;
+        setPosition(1125 + NumofStones / 2 * (2*radius + 1),15);
+        //evenNumberStones++;
     }
     else
     {
         setFillColor(sf::Color::Yellow);
-        setPosition(1125+oddNumberStones*2*radius + oddNumberStones * 1,150);
-        oddNumberStones++;
+        setPosition(1125 + NumofStones / 2 * (2*radius + 1),150);
+        //oddNumberStones++;
     }
     NumofStones++;
 }
@@ -137,6 +137,11 @@ float Stone::getSpin()
     return spin;
 }
 
+int Stone::getNumberofStones()
+{
+    return Stone::NumofStones;
+}
+
 void Stone::setVelocity()
 {
 
@@ -215,6 +220,10 @@ void Stone::setVelocity_s(sf::Vector2f scv, sf::Vector2f svp)
     v=v-(dot_product((v-scv),(this->getPosition()-svp))/(norm_2(this->getPosition()-svp)))*(this->getPosition()-svp);
 }
 
+void Stone::resetNumberofStones()
+{
+    Stone::NumofStones = 0;
+}
 
 /*void Stone::friction()
 {

@@ -25,10 +25,12 @@ class Stone:public sf::CircleShape
         void setDirection();
         void changeStatus();
         void updatePostCollision(sf::Vector2f newVelocity);
+        static void resetNumberofStones();
 
         float getDirection();
         float getSpin();
         bool getStatus();
+        static int getNumberofStones();
 
 
         void setVelocity();

@@ -8,6 +8,10 @@
 
 using namespace std;
 
+const int BOARD_WIDTH = 1250;
+const int BOARD_HEIGHT = 165;
+const int NUM_OF_STONES = 16;
+
 bool checkPlay_Status(Stone s[], int n)
 {
     for (int i=0; i<n; i++)
@@ -20,6 +24,70 @@ bool checkPlay_Status(Stone s[], int n)
     return false;
 }
 
+float getDistance(sf::Vector2f vector1, sf::Vector2f vector2)
+{
+    float x_difference = vector2.x - vector1.x;
+    float y_difference = vector2.y - vector1.y;
+
+    return sqrt(x_difference * x_difference + y_difference * y_difference);
+}
+
+int findClosestStone(const Stone stone_array[], const int NUM_OF_STONES)
+{
+    sf::Vector2f buttonPosition(180,BOARD_HEIGHT / 2);
+    float closest_distance = getDistance(stone_array[0].getPosition(), buttonPosition);
+    int closest_stone = 0;
+
+    for(int i = 1; i < NUM_OF_STONES; i++)
+    {
+        float next_distance = getDistance(stone_array[i].getPosition(), buttonPosition);
+        if(next_distance < closest_distance)
+        {
+            closest_distance = next_distance;
+            closest_stone = i;
+        }
+    }
+
+    return closest_stone;
+}
+
+int getPoints(const Stone winning_team[], const float closest_opponent)
+{
+    int points = 0;
+
+    sf::Vector2f buttonPosition(180,BOARD_HEIGHT / 2);
+    for(int i = 0; i < 8; i++)
+    {
+        if(getDistance(winning_team[i].getPosition(), buttonPosition) < closest_opponent)
+            points++;
+    }
+    return points;
+}
+
+int calculatePointsEarned(const int winner,const Stone team_even[], const Stone team_odd[])
+{
+    int winning_team;
+    if(winner % 2 == 0)
+        winning_team = 0;
+    else
+        winning_team = 1;
+
+    // Determine closest distance of losing team
+    float closest_opponent;
+    sf::Vector2f buttonPosition(180,BOARD_HEIGHT / 2);
+    if(winning_team == 0)
+        closest_opponent = getDistance(team_odd[findClosestStone(team_odd,8)].getPosition(),buttonPosition);
+    else
+        closest_opponent = getDistance(team_even[findClosestStone(team_even,8)].getPosition(),buttonPosition);
+
+    // Calculate points earned by winning team
+    int points_earned = 0;
+    if(winning_team == 0)
+        return getPoints(team_even, closest_opponent);
+    else
+        return getPoints(team_odd, closest_opponent);
+}
+
 int main()
 {
     sf::Time t1=sf::seconds(1.0/60.0);
@@ -27,9 +95,6 @@ int main()
     sf::Clock myclock;
 
     // Create the main window
-    const int BOARD_WIDTH = 1250;
-    const int BOARD_HEIGHT = 165;
-    const int NUM_OF_STONES = 16;
     const int CHECK = 20;
     // Change below constant to update minimum spin
     const float DEGREE_PER_TURN = 10;
@@ -37,7 +102,7 @@ int main()
     const float MIN_SPIN = DEGREE_PER_TURN * (PI / 180) / 8 / 60;
 
     bool Stone_inPlay = false;
-    int Stone_turn = -1;
+    int Stone_turn = 0;
 
     char Play_Mode = 'B';
     char last_Mode = 'B';
@@ -131,6 +196,8 @@ int main()
     sf::Vector2u window_size;
     window_size.x = BOARD_WIDTH;
     window_size.y = BOARD_HEIGHT;
+
+    int winnerDeclaredCounter = 0;
 
 	// Start the game loop
     while (app.isOpen())
@@ -237,10 +304,9 @@ int main()
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && !checkPlay_Status(s_b,16))
         {
-            if (Stone_turn < 16)
+            if (Stone_turn < NUM_OF_STONES)
             {
                 // Begin turn by setting initial speed, direction, and speed to values specified by user
-                Stone_turn++;
                 s_b[Stone_turn].changeStatus();
 
                 //Stone_inPlay = true;
@@ -258,6 +324,7 @@ int main()
                 {
                     s_b[Stone_turn].setInitialDirection((180 - (360 - arrow.getRotation()))*PI/180);
                 }
+                Stone_turn++;
                 arrow.setRotation(0);
 
                 // Return spin icons to default settings
@@ -343,7 +410,41 @@ int main()
                 s_b[stoneNumber].setPosition(-5,s_b[stoneNumber].getPosition().y);
             }
 
+            // Determine winner and number of points earned if applicable
+            if(Stone_turn == NUM_OF_STONES && !checkPlay_Status(s_b,NUM_OF_STONES) && winnerDeclaredCounter == 0)
+            {
+                winnerDeclaredCounter++;
+                // Determine winner
+                int winner = findClosestStone(s_b,NUM_OF_STONES);
 
+                // Determine number of points won
+
+                // Split up teams to find number of points earned
+                Stone team_even[8];
+                Stone team_odd[8];
+                int evenCount = 0;
+                int oddCount = 0;
+                for(int i = 0; i < 16; i++)
+                {
+                    if(i % 2 == 0)
+                    {
+                        team_even[evenCount] = s_b[i];
+                        evenCount++;
+                    }
+                    else
+                    {
+                        team_odd[oddCount] = s_b[i];
+                        oddCount++;
+                    }
+                }
+
+                int points = calculatePointsEarned(winner,team_even, team_odd);
+
+                if(winner % 2 == 0)
+                    cout << "Team A wins " << points << " points!" << endl;
+                else
+                    cout << "Team B wins " << points << " points!" << endl;
+            }
 
                 /*for (int bCheck=0; bCheck<=CHECK; bCheck++)
                 {

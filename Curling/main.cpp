@@ -151,7 +151,6 @@ int main()
     bool Changed_Mode = false;
 
     sf::RenderWindow app(sf::VideoMode(1400, 600), "SFML window");
-    cout << app.getPosition().x << " " << app.getPosition().y << endl;
     sf::RenderWindow houseZoom(sf::VideoMode(350, 350), "House Zoom");
     const sf::Vector2i houseZoomLocation(app.getPosition().x + 500,app.getPosition().y + 170);
     houseZoom.setPosition(houseZoomLocation);

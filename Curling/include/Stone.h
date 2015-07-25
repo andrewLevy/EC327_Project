@@ -23,19 +23,28 @@ class Stone:public sf::CircleShape
         void setSpeed();
         void setInitialDirection(float d);
         void setDirection();
+        void changeStatus();
+        void updatePostCollision(sf::Vector2f newVelocity);
 
         float getDirection();
         float getSpin();
+        bool getStatus();
 
 
         void setVelocity();
 
         void setVelocity_s(sf::Vector2f scv, sf::Vector2f svp);
 
+        static bool isCollision(Stone stone_array[], const int SIZE, int collisionStones[], sf::Vector2u windowSize);
+        static bool isCollision(Stone stone1, Stone stone2);
+        static bool isWallCollision(Stone stone_array[], const int SIZE, int& collisionInfo, sf::Vector2u windowSize);
+        sf::Vector2f findVelocityPostCollision(Stone otherStone);
+
         bool checkWallCollision(sf::Vector2u ws);
         bool checkStoneCollision(Stone s_o);
 
         bool isWithinWindow(sf::Vector2u ws);
+        bool onRink(sf::Vector2u ws);
     protected:
     private:
 
@@ -43,6 +52,7 @@ class Stone:public sf::CircleShape
     float direction;
     float spin;
     float friction;
+    bool inPlay = false;
 
     sf::Vector2f v;
     sf::Vector2f cen;
@@ -52,7 +62,7 @@ class Stone:public sf::CircleShape
     float x_dist;
     float y_dist;
     float tot_dist;
-    float radius = 10*(11.4/12)*.5;
+    float radius = 10*(11.4/12)*.5 + 2;
     //float radius = 30;
 };
 

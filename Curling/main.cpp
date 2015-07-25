@@ -27,7 +27,7 @@ int main()
     sf::Clock myclock;
 
     // Create the main window
-    const int BOARD_WIDTH = 1200;
+    const int BOARD_WIDTH = 1250;
     const int BOARD_HEIGHT = 165;
     const int NUM_OF_STONES = 16;
     const int CHECK = 20;
@@ -46,11 +46,14 @@ int main()
     sf::RenderWindow app(sf::VideoMode(1400, 500), "SFML window");
 
     //Create board
+    // Create House
     sf::CircleShape Targets[4];
     float radius[4] = {60,40,20,5};
     sf::Color T[4] = {sf::Color::Blue, sf::Color::White, sf::Color::Red, sf::Color::White};
+
+    // Create Boundary Lines
     sf::RectangleShape lines[7];
-    sf::Vector2f Lpos[7] = {sf::Vector2f(0,BOARD_HEIGHT/2-.5),sf::Vector2f(390-2,0),sf::Vector2f(180-.5,0),sf::Vector2f(1110-2,0),sf::Vector2f(0,BOARD_HEIGHT),sf::Vector2f(240,BOARD_HEIGHT/2+15),sf::Vector2f(240,BOARD_HEIGHT/2-15)};
+    sf::Vector2f Lpos[7] = {sf::Vector2f(0,BOARD_HEIGHT/2 - 0.5),sf::Vector2f(390-2,0),sf::Vector2f(180-.5,0),sf::Vector2f(1110-2,0),sf::Vector2f(0,BOARD_HEIGHT - 4),sf::Vector2f(240,BOARD_HEIGHT/2+15),sf::Vector2f(240,BOARD_HEIGHT/2-15)};
     sf::Vector2f Lsize[7] = {sf::Vector2f(1110,1),sf::Vector2f(4,BOARD_HEIGHT),sf::Vector2f(1,BOARD_HEIGHT),sf::Vector2f(4,BOARD_HEIGHT),sf::Vector2f(BOARD_WIDTH,4),sf::Vector2f(1110-240,.5),sf::Vector2f(1110-240,.5)};
     for (int i=0; i<4; i++)
     {
@@ -67,9 +70,6 @@ int main()
         lines[i].setFillColor(sf::Color::Black);
         lines[i].setPosition(Lpos[i]);
     }
-
-    //Create stone array
-    Stone s_b[NUM_OF_STONES];
 
     //Sweeping sign
     sf::Font font;
@@ -106,7 +106,7 @@ int main()
     float clockwise_w = clockwiseArrow.getTextureRect().width;
     float clockwise_h = clockwiseArrow.getTextureRect().height;
     clockwiseArrow.setOrigin(clockwise_w / 2,clockwise_h / 2);
-    clockwiseArrow.setPosition(1325 - clockwise_w / 2,BOARD_HEIGHT/2);
+    clockwiseArrow.setPosition(1325 - clockwise_w / 2,BOARD_HEIGHT / 2);
 
     sf::Texture counterClockwiseTexture;
     if (!counterClockwiseTexture.loadFromFile("counterclockwise_v2.png"))
@@ -118,10 +118,13 @@ int main()
     float counterClockwise_w = counterClockwiseArrow.getTextureRect().width;
     float counterClockwise_h = counterClockwiseArrow.getTextureRect().height;
     counterClockwiseArrow.setOrigin(counterClockwise_w / 2,counterClockwise_h / 2);
-    counterClockwiseArrow.setPosition(1393 - counterClockwise_w / 2,BOARD_HEIGHT/2);
+    counterClockwiseArrow.setPosition(1393 - counterClockwise_w / 2,BOARD_HEIGHT / 2);
+
     int spinCounter = 0;
 
 
+    //Create stone array
+    Stone s_b[NUM_OF_STONES];
 
 
     //sf::Vector2u window_size = app.getSize();
@@ -167,7 +170,7 @@ int main()
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && arrow.getScale().x > .05)
             {
-                arrow.scale(.95,1.0);
+                arrow.scale(0.95,1.0);
             }
             app.draw(arrow);
 
@@ -238,6 +241,8 @@ int main()
             {
                 // Begin turn by setting initial speed, direction, and speed to values specified by user
                 Stone_turn++;
+                s_b[Stone_turn].changeStatus();
+
                 //Stone_inPlay = true;
                 s_b[Stone_turn].setPosition(1110,BOARD_HEIGHT/2);
                 s_b[Stone_turn].setInitialSpeed(arrow.getScale().x*50);
@@ -247,11 +252,11 @@ int main()
 
                 if(arrow.getRotation() <= 45)
                 {
-                    s_b[Stone_turn].setInitialDirection(-1*arrow.getRotation()*PI/180);
+                    s_b[Stone_turn].setInitialDirection((180 + arrow.getRotation())*PI/180);
                 }
                 else
                 {
-                    s_b[Stone_turn].setInitialDirection((360 - arrow.getRotation())*PI/180);
+                    s_b[Stone_turn].setInitialDirection((180 - (360 - arrow.getRotation()))*PI/180);
                 }
                 arrow.setRotation(0);
 
@@ -259,6 +264,9 @@ int main()
                 spinCounter = 0;
                 clockwiseArrow.setPosition(1325 - clockwise_w / 2,BOARD_HEIGHT/2);
                 counterClockwiseArrow.setPosition(1393 - counterClockwise_w / 2,BOARD_HEIGHT/2);
+
+                // Return arrow to normal length
+                arrow.setScale(0.1,0.1);
             }
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
@@ -270,13 +278,14 @@ int main()
             app.close();
         }
 
-        //move stone in Bouce Mode
+
+        // Deliver stone with speed, direction, and spin as specified by user and check for collisions
         if (Play_Mode=='B')
         {
             Changed_Mode =false;
             for (int b=0; b<NUM_OF_STONES; b++)
             {
-                app.draw(s_b[b]);
+                //app.draw(s_b[b]);
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
                 {
                     s_b[b].setFriction(0.1*5*9.81*.0168/60);
@@ -286,18 +295,57 @@ int main()
                 {
                     s_b[b].setFriction();
                 }
-                //s_b[b].setSpin();
                 s_b[b].setSpeed();
                 s_b[b].setDirection();
                 s_b[b].setVelocity();
                 s_b[b].makeMove();
+            }
 
-                if(s_b[b].checkWallCollision(window_size))
+
+            //while(s_b[b].checkWallCollision(window_size))
+
+
+            /*for(int i = 0; i < 16; i++)
+            {
+                cout << "Stone Number: " << i << " ";
+                cout << "Postion: " << s_b[i].getPosition().x << " " << s_b[i].getPosition().y << endl;
+            }*/
+            // Check for stone collisions
+            int collisionStones[2];
+            while(Stone::isCollision(s_b,NUM_OF_STONES,collisionStones, window_size))
+            {
+                //cout << "Collison!" << endl;
+                //cout << collisionStones[0] << " " << collisionStones[1] << endl;
+
+                // Find and set new velocities post collision for stones that collided
+                sf::Vector2f newStone1Velocity = s_b[collisionStones[0]].findVelocityPostCollision(s_b[collisionStones[1]]);
+                sf::Vector2f newStone2Velocity = s_b[collisionStones[1]].findVelocityPostCollision(s_b[collisionStones[0]]);
+
+                // Update velocities for colliding stones
+                s_b[collisionStones[0]].updatePostCollision(newStone1Velocity);
+                s_b[collisionStones[1]].updatePostCollision(newStone2Velocity);
+
+                while(Stone::isCollision(s_b[collisionStones[0]],s_b[collisionStones[1]]))
                 {
-                    s_b[b].setInitialSpeed(0.0);
+                    s_b[collisionStones[0]].makeMove();
+                    s_b[collisionStones[1]].makeMove();
                 }
+            }
 
-                for (int bCheck=0; bCheck<=CHECK; bCheck++)
+            int stoneNumber;
+            while(Stone::isWallCollision(s_b,NUM_OF_STONES,stoneNumber, window_size))
+            {
+                s_b[stoneNumber].setFillColor(sf::Color::White);
+                s_b[stoneNumber].setOutlineColor(sf::Color::White);
+                s_b[stoneNumber].setInitialSpeed(0);
+                s_b[stoneNumber].changeStatus();
+                //cout << s_b[stoneNumber].getSpeed() << endl;
+                s_b[stoneNumber].setPosition(-5,s_b[stoneNumber].getPosition().y);
+            }
+
+
+
+                /*for (int bCheck=0; bCheck<=CHECK; bCheck++)
                 {
                     for (int g=0; g<Stone_turn; g++)
                     {
@@ -322,10 +370,11 @@ int main()
                             }
                         }
                     }
-                }
-            }
-        }
+                }*/
 
+
+
+        /*
         // Pause Game
         else if (Play_Mode == 'P')
         {
@@ -340,13 +389,15 @@ int main()
                     Play_Mode = 'Q';
                 }
             }
-        }
+        }*/
 
+        }
         // Update the window
         app.display();
         sf::sleep(t1);
         t2=myclock.getElapsedTime();
         // std::cout << t2.asSeconds() << std::endl;
+
     }
 
     return EXIT_SUCCESS;

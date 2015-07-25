@@ -532,7 +532,7 @@ int main()
                 }
 
 
-                if(winner == -1)
+                if(winner == -1 || !inHouse(s_b[winner], Targets[0]))
                     cout << "Tie game! No points earned." << endl;
                 else if(winner % 2 == 0)
                 {

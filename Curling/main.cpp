@@ -518,6 +518,8 @@ int main()
                     team_B_points += points;
                     cout << "Team B wins " << points << " points!" << endl;
                 }
+                // Display current score
+                cout << "Current Score: " << "Team A - " << team_A_points << " " << "Team B - " << team_B_points << endl;
             }
 
             // Begin new end if neither player has reached required number of points
@@ -528,6 +530,7 @@ int main()
                 for(int i = 0; i < 16; i++)
                     s_b[i] = newStoneSet[i];
                 Stone_turn = 0;
+                winnerDeclaredCounter = 0;
                 //s_b[0].setFillColor(sf::Color::Green);
                 //s_b[1].setFillColor(sf::Color::Yellow);
                 //for(int i = 0; i < 16; i++)

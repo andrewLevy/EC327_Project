@@ -13,9 +13,9 @@ const int BOARD_WIDTH = 1250;
 const int BOARD_HEIGHT = 165;
 const int NUM_OF_STONES = 16;
 
-bool checkPlay_Status(Stone s[], int n)
+bool checkPlay_Status(Stone s[], const int N)
 {
-    for (int i=0; i<n; i++)
+    for (int i=0; i<N; i++)
     {
         if (s[i].getSpeed() != 0)
         {
@@ -142,6 +142,7 @@ int main()
 {
     sf::Time t1=sf::seconds(1.0/60.0);
     sf::Time t2;
+    sf::Time t_sweep[2];
     sf::Clock myclock;
 
     // Create the main window
@@ -160,7 +161,7 @@ int main()
 
     sf::RenderWindow app(sf::VideoMode(1400, 600), "SFML window");
     sf::RenderWindow houseZoom(sf::VideoMode(350, 350), "House Zoom");
-    const sf::Vector2i houseZoomLocation(app.getPosition().x + 500,app.getPosition().y + 170);
+    const sf::Vector2i houseZoomLocation(app.getPosition().x,app.getPosition().y + 170);
     houseZoom.setPosition(houseZoomLocation);
 
     //Create board
@@ -168,11 +169,6 @@ int main()
     sf::CircleShape Targets[4];
     float radius[4] = {60,40,20,5};
     sf::Color T[4] = {sf::Color::Blue, sf::Color::White, sf::Color::Red, sf::Color::White};
-
-    // Create Boundary Lines
-    sf::RectangleShape lines[7];
-    sf::Vector2f Lpos[7] = {sf::Vector2f(0,BOARD_HEIGHT/2 - 0.5),sf::Vector2f(390-2,0),sf::Vector2f(180 -.5,0),sf::Vector2f(1110-2,0),sf::Vector2f(0,BOARD_HEIGHT - 4),sf::Vector2f(240,BOARD_HEIGHT/2+15),sf::Vector2f(240,BOARD_HEIGHT/2-15)};
-    sf::Vector2f Lsize[7] = {sf::Vector2f(1110,1),sf::Vector2f(4,BOARD_HEIGHT),sf::Vector2f(1,BOARD_HEIGHT),sf::Vector2f(4,BOARD_HEIGHT),sf::Vector2f(BOARD_WIDTH,4),sf::Vector2f(1110-240,.5),sf::Vector2f(1110-240,.5)};
     for (int i=0; i<4; i++)
     {
         Targets[i].setRadius(radius[i]);
@@ -182,7 +178,12 @@ int main()
         Targets[i].setOutlineColor(sf::Color::Black);
         Targets[i].setOutlineThickness(-2.0);
     }
-    for (int i=0; i<7; i++)
+
+    // Create Boundary Lines
+    sf::RectangleShape lines[8];
+    sf::Vector2f Lpos[8] = {sf::Vector2f(0,BOARD_HEIGHT/2 - 0.5),sf::Vector2f(390-2,0),sf::Vector2f(180 -.5,0),sf::Vector2f(1110-2,0),sf::Vector2f(0,BOARD_HEIGHT - 4),sf::Vector2f(240,BOARD_HEIGHT/2+15),sf::Vector2f(240,BOARD_HEIGHT/2-15),sf::Vector2f(120-.5,0)};
+    sf::Vector2f Lsize[8] = {sf::Vector2f(1110,1),sf::Vector2f(4,BOARD_HEIGHT),sf::Vector2f(1,BOARD_HEIGHT),sf::Vector2f(4,BOARD_HEIGHT),sf::Vector2f(BOARD_WIDTH,4),sf::Vector2f(1110-240,.5),sf::Vector2f(1110-240,.5),sf::Vector2f(1,BOARD_HEIGHT)};
+    for (int i=0; i<8; i++)
     {
         lines[i].setSize(Lsize[i]);
         lines[i].setFillColor(sf::Color::Black);
@@ -199,13 +200,29 @@ int main()
     sweep_message.setPosition(1000,145);
     sweep_message.setColor(sf::Color::Red);
 
-    //launch arrow
-    sf::Texture texture;
-    if (!texture.loadFromFile("arrow.png"))
+    sf::Texture sweeping_pic;
+    if (!sweeping_pic.loadFromFile("sweeping.png"))
     {
         return EXIT_FAILURE;
     }
-    sf::Sprite arrow(texture);
+    sf::Sprite sweeping(sweeping_pic);
+    sweeping.scale(0.2,0.2);
+    float sweep_w = sweeping.getTextureRect().width;
+    float sweep_h = sweeping.getTextureRect().height;
+    sweeping.setOrigin(sweep_w,(1/3)*sweep_h);
+    sweeping.setPosition(1000,130);
+    float ms = 1;
+    float pos_sw_x = 0.0;
+    float pos_sw_y = 0.0;
+
+
+    //launch arrow
+    sf::Texture arrow_pic;
+    if (!arrow_pic.loadFromFile("arrow.png"))
+    {
+        return EXIT_FAILURE;
+    }
+    sf::Sprite arrow(arrow_pic);
     arrow.scale(0.1,0.1);
     float arrow_w = arrow.getTextureRect().width;
     float arrow_h = arrow.getTextureRect().height;
@@ -240,9 +257,20 @@ int main()
 
     int spinCounter = 0;
 
-
     //Create stone array
     Stone s_b[NUM_OF_STONES];
+
+        //Create initial stone placement cirlcs
+    sf::CircleShape resting_Spots[NUM_OF_STONES];
+    for (int rs=0; rs<NUM_OF_STONES; rs++)
+    {
+        resting_Spots[rs].setRadius(s_b[rs].getRadius());
+        resting_Spots[rs].setFillColor(sf::Color::White);
+        resting_Spots[rs].setOutlineColor(sf::Color::Black);
+        resting_Spots[rs].setOutlineThickness(-1.0);
+        resting_Spots[rs].setOrigin(s_b[rs].getRadius(),s_b[rs].getRadius());
+        resting_Spots[rs].setPosition(s_b[rs].getPosition());
+    }
 
 
     //sf::Vector2u window_size = app.getSize();
@@ -286,19 +314,19 @@ int main()
             // Draw array with length and direction as specified by user
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && (arrow.getRotation() > 315 || arrow.getRotation() <= 45))
             {
-                arrow.rotate(-1);
+                arrow.rotate(-.25);
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && (arrow.getRotation() >= 315 || arrow.getRotation() < 45))
             {
-                arrow.rotate(1);
+                arrow.rotate(.25);
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && arrow.getScale().x < .2)
             {
-                arrow.scale(1.05,1.0);
+                arrow.scale(1.01,1.0);
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && arrow.getScale().x > .05)
             {
-                arrow.scale(0.95,1.0);
+                arrow.scale(0.99,1.0);
             }
             app.draw(arrow);
 
@@ -342,7 +370,7 @@ int main()
         }
 
         // Draw boundary lines
-        for (int l=0; l<7; l++)
+        for (int l=0; l<8; l++)
         {
             app.draw(lines[l]);
             houseZoom.draw(lines[l]);
@@ -351,6 +379,7 @@ int main()
         // Draw stone array
         for (int s=0; s<16; s++)
         {
+            app.draw(resting_Spots[s]);
             app.draw(s_b[s]);
             houseZoom.draw(s_b[s]);
         }
@@ -372,40 +401,6 @@ int main()
                 Changed_Mode = true;
             }
         }
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && !checkPlay_Status(s_b,16))
-        {
-            if (Stone_turn < NUM_OF_STONES)
-            {
-                // Begin turn by setting initial speed, direction, and speed to values specified by user
-                s_b[Stone_turn].changeStatus();
-
-                //Stone_inPlay = true;
-                s_b[Stone_turn].setPosition(1110,BOARD_HEIGHT/2);
-                s_b[Stone_turn].setInitialSpeed(arrow.getScale().x*50);
-                s_b[Stone_turn].setSpin(spinCounter * MIN_SPIN);
-
-                //cout << arrow.getScale().x << endl;
-
-                if(arrow.getRotation() <= 45)
-                {
-                    s_b[Stone_turn].setInitialDirection((180 + arrow.getRotation())*PI/180);
-                }
-                else
-                {
-                    s_b[Stone_turn].setInitialDirection((180 - (360 - arrow.getRotation()))*PI/180);
-                }
-                Stone_turn++;
-                arrow.setRotation(0);
-
-                // Return spin icons to default settings
-                spinCounter = 0;
-                clockwiseArrow.setPosition(1325 - clockwise_w / 2,BOARD_HEIGHT/2);
-                counterClockwiseArrow.setPosition(1393 - counterClockwise_w / 2,BOARD_HEIGHT/2);
-
-                // Return arrow to normal length
-                arrow.setScale(0.1,0.1);
-            }
-        }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
         {
             Play_Mode = 'P';
@@ -419,28 +414,88 @@ int main()
         // Deliver stone with speed, direction, and spin as specified by user and check for collisions
         if (Play_Mode=='B')
         {
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && !checkPlay_Status(s_b,NUM_OF_STONES))
+            {
+                if (Stone_turn < NUM_OF_STONES)
+                {
+                    // Begin turn by setting initial speed, direction, and speed to values specified by user
+                    s_b[Stone_turn].changeStatus();
+
+                    //Stone_inPlay = true;
+                    s_b[Stone_turn].setPosition(1110,BOARD_HEIGHT/2);
+                    s_b[Stone_turn].setInitialSpeed(arrow.getScale().x*50);
+                    s_b[Stone_turn].setSpin(spinCounter * MIN_SPIN);
+
+                    //cout << arrow.getScale().x << endl;
+
+                    if(arrow.getRotation() <= 45)
+                    {
+                        s_b[Stone_turn].setInitialDirection((180 + arrow.getRotation())*PI/180);
+                    }
+                    else
+                    {
+                        s_b[Stone_turn].setInitialDirection((180 - (360 - arrow.getRotation()))*PI/180);
+                    }
+                    Stone_turn++;
+                    arrow.setRotation(0);
+
+                    // Return spin icons to default settings
+                    spinCounter = 0;
+                    clockwiseArrow.setPosition(1325 - clockwise_w / 2,BOARD_HEIGHT/2);
+                    counterClockwiseArrow.setPosition(1393 - counterClockwise_w / 2,BOARD_HEIGHT/2);
+
+                    // Return arrow to normal length
+                    arrow.setScale(0.1,0.1);
+                }
+            }
+
             Changed_Mode =false;
             for (int b=0; b<NUM_OF_STONES; b++)
             {
-                //app.draw(s_b[b]);
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+                // Setting Friction
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && checkPlay_Status(s_b,NUM_OF_STONES))
                 {
-                    s_b[b].setFriction(0.1*5*9.81*.0168/60);
+                    s_b[b].setFriction(0.8*5*9.81*.0168/60);
+                    app.draw(sweeping);
+                    houseZoom.draw(sweeping);
                     app.draw(sweep_message);
+                    if (t_sweep[0] == sf::seconds(0.0))
+                    {
+                        t_sweep[0] = myclock.getElapsedTime();
+                    }
+                    else
+                    {
+                        t_sweep[1] = myclock.getElapsedTime();
+                    }
+
+                    if(t_sweep[1]-t_sweep[0] > sf::seconds(0.15))
+                    {
+                        t_sweep[0] = t_sweep[1];
+                        ms *= -1;
+                    }
+                    for (int s=0; s<Stone_turn; s++)
+                    {
+                        if (s_b[s].getSpeed() != 0)
+                        {
+                            pos_sw_x = s_b[s].getPosition().x;
+                            pos_sw_y = s_b[s].getPosition().y;
+                        }
+                    }
+                    sweeping.setPosition(pos_sw_x-8.0,pos_sw_y-18.0+5.0*ms);
                 }
                 else
                 {
+                    t_sweep[0]=sf::seconds(0.0);
+                    t_sweep[1]=sf::seconds(0.0);
+                    sweeping.setPosition(0.0,0.0);
                     s_b[b].setFriction();
                 }
+
                 s_b[b].setSpeed();
                 s_b[b].setDirection();
                 s_b[b].setVelocity();
                 s_b[b].makeMove();
             }
-
-
-            //while(s_b[b].checkWallCollision(window_size))
-
 
             /*for(int i = 0; i < 16; i++)
             {
@@ -562,37 +617,6 @@ int main()
                 //for(int i = 0; i < 16; i++)
                     //cout << s_b[i].getPosition().x << " " << s_b[i].getPosition().y << " " << s_b[i].getFillColor().r.toInteger() << " " << s_b[i].getFillColor().g << " " << s_b[i].getFillColor().b << endl;
             }
-
-                /*for (int bCheck=0; bCheck<=CHECK; bCheck++)
-                {
-                    for (int g=0; g<Stone_turn; g++)
-                    {
-                        if (g!=b)
-                        {
-                            if (s_b[b].checkStoneCollision(s_b[g]))
-                            {
-                                sf::Vector2f b_v=s_b[b].getVelocity();
-                                s_b[b].setVelocity_s(s_b[g].getVelocity(), s_b[g].getPosition());
-                                s_b[g].setVelocity_s(b_v, s_b[b].getPosition());
-
-                                s_b[b].setInitialSpeed(sqrt(s_b[b].getVelocity().x*s_b[b].getVelocity().x+s_b[b].getVelocity().y*s_b[b].getVelocity().y));
-                                s_b[g].setInitialSpeed(sqrt(s_b[g].getVelocity().x*s_b[g].getVelocity().x+s_b[g].getVelocity().y*s_b[g].getVelocity().y));
-
-                                s_b[b].setInitialDirection(atan(s_b[b].getVelocity().y/s_b[b].getVelocity().x));
-                                s_b[g].setInitialDirection(sqrt(s_b[g].getVelocity().y/s_b[g].getVelocity().x));
-                            }
-                            while (s_b[b].checkStoneCollision(s_b[g]))
-                            {
-                                s_b[b].makeMove(CHECK);
-                                s_b[g].makeMove(CHECK);
-                            }
-                        }
-                    }
-                }*/
-
-
-
-        /*
         // Pause Game
         else if (Play_Mode == 'P')
         {
@@ -607,7 +631,7 @@ int main()
                     Play_Mode = 'Q';
                 }
             }
-        }*/
+        }
 
         }
         // Update the window

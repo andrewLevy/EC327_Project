@@ -42,13 +42,11 @@ Stone::Stone()
     {
         setFillColor(sf::Color::Green);
         setPosition(1125 + NumofStones / 2 * (2*radius + 1),15);
-        //evenNumberStones++;
     }
     else
     {
         setFillColor(sf::Color::Yellow);
         setPosition(1125 + NumofStones / 2 * (2*radius + 1),150);
-        //oddNumberStones++;
     }
     NumofStones++;
 }
@@ -66,10 +64,7 @@ float Stone::getDistance(Stone s_o)
     tot_dist = sqrt((x_dist*x_dist)+(y_dist*y_dist));
 
     return tot_dist;
-
 }
-
-
 
 bool Stone::isWithinWindow(sf::Vector2u ws)
 {
@@ -144,29 +139,8 @@ int Stone::getNumberofStones()
 
 void Stone::setVelocity()
 {
-
     v.x= speed * cos(direction);
     v.y= speed * sin(direction);
-
-    /*
-    if (v.x>0)
-    {
-        v.x -= friction;
-    }
-    else if (v.x<0)
-    {
-        v.x += friction;
-    }
-    if (v.y>0)
-    {
-        v.y -= friction;
-    }
-    else if (v.y<0)
-    {
-        v.y += friction;
-    }*/
-
-
 }
 
 void Stone::changeStatus()
@@ -215,36 +189,16 @@ bool Stone::checkStoneCollision(Stone s_o)
     }
 }
 
-void Stone::setVelocity_s(sf::Vector2f scv, sf::Vector2f svp)
+/*void Stone::setVelocity_s(sf::Vector2f scv, sf::Vector2f svp)
 {
     v=v-(dot_product((v-scv),(this->getPosition()-svp))/(norm_2(this->getPosition()-svp)))*(this->getPosition()-svp);
-}
+}*/
 
 void Stone::resetNumberofStones()
 {
     Stone::NumofStones = 0;
 }
 
-/*void Stone::friction()
-{
-    float friction_coef = 9.8*.0168/60;
-    if (v.x>0)
-    {
-        v.x = v.x - friction_coef;
-    }
-    else if (v.x<0)
-    {
-        v.x = v.x + friction_coef;
-    }
-    if (v.y>0)
-    {
-        v.y = v.y - friction_coef;
-    }
-    else if (v.y<0)
-    {
-        v.y = v.y + friction_coef;
-    }
-}*/
 bool Stone::getStatus()
 {
     return inPlay;
@@ -328,8 +282,8 @@ sf::Vector2f Stone::findVelocityPostCollision(Stone otherStone)
     float dotProduct2 = positionDifference.x * positionDifference.x + positionDifference.y * positionDifference.y;
 
     sf::Vector2f intermediateVector;
-    intermediateVector.x = (dotProduct1 / dotProduct2) * positionDifference.x;
-    intermediateVector.y = (dotProduct1 / dotProduct2) * positionDifference.y;
+    intermediateVector.x = 0.9*(dotProduct1 / dotProduct2) * positionDifference.x;
+    intermediateVector.y = 0.9*(dotProduct1 / dotProduct2) * positionDifference.y;
 
     newVelocity = getVelocity() - intermediateVector;
     return newVelocity;

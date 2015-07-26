@@ -4,6 +4,7 @@
 #include <iostream>
 #include <Stone.h>
 #include <vector>
+#include <string>
 
 #define PI 3.14159265
 
@@ -21,6 +22,15 @@ bool checkPlay_Status(Stone s[], const int N)
         {
             return true;
         }
+    }
+    return false;
+}
+
+bool inValid_Throw(Stone s)
+{
+    if (s.getPosition().x > 390 && s.getPosition().x < 1110)
+    {
+        return true;
     }
     return false;
 }
@@ -158,6 +168,9 @@ int main()
     char Play_Mode = 'B';
     char last_Mode = 'B';
     bool Changed_Mode = false;
+    bool lastThrow = true;
+    int setNum = 0;
+
 
     sf::RenderWindow app(sf::VideoMode(1400, 600), "SFML window");
     sf::RenderWindow houseZoom(sf::VideoMode(350, 350), "House Zoom");
@@ -190,16 +203,17 @@ int main()
         lines[i].setPosition(Lpos[i]);
     }
 
-    //Sweeping sign
+    //Message
     sf::Font font;
     if (!font.loadFromFile("sansation.ttf"))
     {
         return EXIT_FAILURE;
     }
-    sf::Text sweep_message("Sweeping",font,15);
-    sweep_message.setPosition(1000,145);
-    sweep_message.setColor(sf::Color::Red);
+    sf::Text message("Invalid Throw",font,15);
+    message.setPosition(1000,145);
+    message.setColor(sf::Color::Red);
 
+    //Sweeping Picture
     sf::Texture sweeping_pic;
     if (!sweeping_pic.loadFromFile("sweeping.png"))
     {
@@ -256,6 +270,52 @@ int main()
     counterClockwiseArrow.setPosition(1393 - counterClockwise_w / 2,BOARD_HEIGHT / 2);
 
     int spinCounter = 0;
+
+    //Create the Score Board
+    sf::RectangleShape sb[6];
+    sf::Text sb_Text[6];
+
+    sf::Vector2f sb_size;
+    sb_size.x = 100;
+    sb_size.y = 50;
+    sb[0].setFillColor(sf::Color::Green);
+    sb[1].setFillColor(sf::Color::Black);
+    sb[2].setFillColor(sf::Color::Yellow);
+    sb_Text[0].setString("Score");
+    sb_Text[1].setString("Set");
+    sb_Text[2].setString("Score");
+
+    for (int b=0; b<6; b++)
+    {
+        if (b<3)
+        {
+            sb[b].setSize(sb_size);
+            sb[b].setOrigin(sb_size.x/2,sb_size.y/2);
+            sb[b].setOutlineColor(sf::Color::Black);
+            sb[b].setOutlineThickness(-2.0);
+            sb[b].setPosition(BOARD_WIDTH/2+(b-1)*sb_size.x,195);
+            sb_Text[b].setFont(font);
+            sb_Text[b].setOrigin(sb_Text[b].getLocalBounds().width/2,sb_Text[b].getLocalBounds().height/2);
+            sb_Text[b].setCharacterSize(30);
+            sb_Text[b].setPosition(sb[b].getPosition());
+            sb_Text[b].setColor(sf::Color::Black);
+        }
+        else
+        {
+            sb[b].setSize(sb_size);
+            sb[b].setOrigin(sb_size.x/2,sb_size.y/2);
+            sb[b].setOutlineColor(sf::Color::Black);
+            sb[b].setOutlineThickness(-2.0);
+            sb[b].setPosition(BOARD_WIDTH/2+(b-4)*sb_size.x,245);
+            sb_Text[b].setFont(font);
+            sb_Text[b].setOrigin(sb_Text[b].getLocalBounds().width/2,sb_Text[b].getCharacterSize()/2);
+            sb_Text[b].setCharacterSize(20);
+            sb_Text[b].setPosition(sb[b].getPosition());
+            sb_Text[b].setString("0");
+            sb_Text[b].setColor(sf::Color::Black);
+        }
+    }
+    sb_Text[1].setColor(sf::Color::White);
 
     //Create stone array
     Stone s_b[NUM_OF_STONES];
@@ -376,6 +436,12 @@ int main()
             houseZoom.draw(lines[l]);
         }
 
+        //Draw Score Board
+        for (int b=0; b<6; b++)
+        {
+            app.draw(sb[b]);
+            app.draw(sb_Text[b]);
+        }
         // Draw stone array
         for (int s=0; s<16; s++)
         {
@@ -414,8 +480,25 @@ int main()
         // Deliver stone with speed, direction, and spin as specified by user and check for collisions
         if (Play_Mode=='B')
         {
+            if (!lastThrow)
+            {
+                app.draw(message);
+            }
+            //check for invalid throws
+            if (!checkPlay_Status(s_b,NUM_OF_STONES))
+            {
+                for (int iv=0; iv<Stone_turn; iv++)
+                {
+                    if (inValid_Throw(s_b[iv]))
+                    {
+                        lastThrow = false;
+                        s_b[iv].setPosition(0.0,0.0);
+                    }
+                }
+            }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && !checkPlay_Status(s_b,NUM_OF_STONES))
             {
+                lastThrow = true;
                 if (Stone_turn < NUM_OF_STONES)
                 {
                     // Begin turn by setting initial speed, direction, and speed to values specified by user
@@ -458,7 +541,6 @@ int main()
                     s_b[b].setFriction(0.8*5*9.81*.0168/60);
                     app.draw(sweeping);
                     houseZoom.draw(sweeping);
-                    app.draw(sweep_message);
                     if (t_sweep[0] == sf::seconds(0.0))
                     {
                         t_sweep[0] = myclock.getElapsedTime();
@@ -593,11 +675,13 @@ int main()
                 {
                     team_A_points += points;
                     cout << "Team A wins " << points << " points!" << endl;
+                    sb_Text[3].setString(to_string(team_A_points));
                 }
                 else
                 {
                     team_B_points += points;
                     cout << "Team B wins " << points << " points!" << endl;
+                    sb_Text[5].setString(to_string(team_B_points));
                 }
                 // Display current score
                 cout << "Current Score - " << "Team A: " << team_A_points << " " << "Team B: " << team_B_points << endl;

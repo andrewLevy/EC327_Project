@@ -13,19 +13,6 @@ using namespace std;
 
 const int BOARD_WIDTH = 1250;
 const int BOARD_HEIGHT = 165;
-//const int NUM_OF_STONES = 16;
-
-bool checkPlay_Status(Stone s[], const int N)
-{
-    for (int i=0; i<N; i++)
-    {
-        if (s[i].getSpeed() != 0)
-        {
-            return true;
-        }
-    }
-    return false;
-}
 
 bool inValid_Throw(Stone s)
 {
@@ -34,119 +21,6 @@ bool inValid_Throw(Stone s)
         return true;
     }
     return false;
-}
-
-float getDistance(sf::Vector2f vector1, sf::Vector2f vector2)
-{
-    float x_difference = vector2.x - vector1.x;
-    float y_difference = vector2.y - vector1.y;
-
-    return sqrt(x_difference * x_difference + y_difference * y_difference);
-}
-
-bool inHouse(Stone stone1, sf::CircleShape target)
-{
-    if(getDistance(stone1.getPosition(), target.getPosition()) <= target.getRadius())
-        return true;
-    else
-        return false;
-}
-
-int findClosestStone(Stone stone_array[], int NUM_OF_STONES)
-{
-    // Add closest stone(s) to vector
-    sf::Vector2f buttonPosition(180,BOARD_HEIGHT / 2);
-    float closest_distance = getDistance(stone_array[0].getPosition(), buttonPosition);
-    vector<int> closestStones;
-    if(stone_array[0].getStatus())
-        closestStones.push_back(0);
-    else
-        closestStones.push_back(-1);
-
-    for(int i = 1; i < NUM_OF_STONES; i++)
-    {
-        if(stone_array[i].getStatus())
-        {
-            float next_distance = getDistance(stone_array[i].getPosition(), buttonPosition);
-            if(next_distance == closest_distance)
-            {
-                if(closestStones[0] == -1)
-                {
-                    closestStones.clear();
-                    closestStones.push_back(i);
-                }
-                else
-                {
-                    closestStones.push_back(i);
-                }
-            }
-            else if(next_distance < closest_distance)
-            {
-                closest_distance = next_distance;
-                closestStones.clear();
-                closestStones.push_back(i);
-            }
-        }
-    }
-
-    // If tie determine if stones come from same or both teams
-    bool team_even = false;
-    bool team_odd = false;
-    if(closestStones.size() > 1)
-    {
-        for(int i = 0; i < closestStones.size(); i++)
-        {
-            if(closestStones[i] % 2 == 0)
-                team_even = true;
-            else
-                team_odd = true;
-        }
-
-        if(team_even && team_odd)
-        {
-            closestStones.clear();
-            closestStones.push_back(-1);
-        }
-    }
-
-    // There was a tie game if -1 is returned
-    return closestStones[0];
-}
-
-int getPoints(Stone winning_team[], const float closest_opponent, sf::CircleShape target)
-{
-    int points = 0;
-
-    sf::Vector2f buttonPosition(180,BOARD_HEIGHT / 2);
-    for(int i = 0; i < 8; i++)
-    {
-        if(inHouse(winning_team[i], target) && getDistance(winning_team[i].getPosition(), buttonPosition) < closest_opponent)
-            points++;
-    }
-    return points;
-}
-
-int calculatePointsEarned(const int winner, Stone team_even[], Stone team_odd[], sf::CircleShape target)
-{
-    int winning_team;
-    if(winner % 2 == 0)
-        winning_team = 0;
-    else
-        winning_team = 1;
-
-    // Determine closest distance of losing team
-    float closest_opponent;
-    sf::Vector2f buttonPosition(180,BOARD_HEIGHT / 2);
-    if(winning_team == 0)
-        closest_opponent = getDistance(team_odd[findClosestStone(team_odd,8)].getPosition(),buttonPosition);
-    else
-        closest_opponent = getDistance(team_even[findClosestStone(team_even,8)].getPosition(),buttonPosition);
-
-    // Calculate points earned by winning team
-    if(winning_team == 0)
-        return getPoints(team_even, closest_opponent, target);
-    else
-        return getPoints(team_odd, closest_opponent, target);
 }
 
 int main()
@@ -168,9 +42,10 @@ int main()
     sf::Time t_sweep[2];
     sf::Clock myclock;
 
-    // Create the main window
+
     const int CHECK = 20;
-    // Change below constant to update minimum spin
+
+    // Change below constants to update minimum spin
     const float DEGREE_PER_TURN = 10;
     const float TIME_PER_TURN = 10;
     const float MIN_SPIN = DEGREE_PER_TURN * (PI / 180) / 8 / 60;
@@ -186,9 +61,10 @@ int main()
 
 
     sf::RenderWindow app(sf::VideoMode(1400, 600), "SFML window");
+
+    // Create window displaying close up of House
     sf::RenderWindow houseZoom(sf::VideoMode(350, 350), "House Zoom");
-    const sf::Vector2i houseZoomLocation(app.getPosition().x,app.getPosition().y + 170);
-    houseZoom.setPosition(houseZoomLocation);
+    game.createHouseView(houseZoom,app);
 
     // Upload font
     sf::Font font;
@@ -197,15 +73,12 @@ int main()
         return EXIT_FAILURE;
     }
 
-    // Create House, boundary lines, and initial placement circles
+    // Create House, boundary lines, initial placement circles, and label identifying play type (practice or one-on-one)
     sf::CircleShape Targets[4];
     sf::RectangleShape lines[8];
     sf::CircleShape resting_Spots[NUM_OF_STONES];
-    //sf::RectangleShape sb[6];
-    //sf::Text sb_Text[6];
-    //sf::Vector2f sb_size(100,50);
-    //Create initial stone placement cirlcs
-    game.drawRink(Targets,lines, resting_Spots,s_b,NUM_OF_STONES);
+    sf::Text gameTypeLabel;
+    game.drawRink(Targets,lines, resting_Spots,s_b,NUM_OF_STONES,gameTypeLabel,font);
 
     // Invalid Throw Message
     sf::Text message("Invalid Throw",font,15);
@@ -271,7 +144,6 @@ int main()
     int spinCounter = 0;
 
     //Create the Score Board
-
     sf::RectangleShape sb[6];
     sf::Text sb_Text[6];
     sf::Vector2f sb_size(100,50);
@@ -315,8 +187,7 @@ int main()
     }
     sb_Text[1].setColor(sf::Color::White);
 
-    //Create stone array
-    //Stone s_b[NUM_OF_STONES];
+
 
 
 
@@ -328,9 +199,9 @@ int main()
 
     // Initialize Scoreboard Data
     int winnerDeclaredCounter = 0;
-    int points_to_win = 4;
-    int team_A_points = 0;
-    int team_B_points = 0;
+    //int points_to_win = 4;
+    //int team_A_points = 0;
+    //int team_B_points = 0;
 
 	// Start the game loop
     while (app.isOpen())
@@ -355,7 +226,7 @@ int main()
         }
 
         // Draw the board
-        Stone_inPlay = checkPlay_Status(s_b, NUM_OF_STONES);
+        Stone_inPlay = game.checkPlay_Status(s_b, NUM_OF_STONES);
 
         if (!Stone_inPlay)
         {
@@ -431,19 +302,17 @@ int main()
             app.draw(sb_Text[b]);
         }
         // Draw stone array
-        for (int s=0; s<16; s++)
+        for (int s=0; s<NUM_OF_STONES; s++)
         {
             app.draw(resting_Spots[s]);
             app.draw(s_b[s]);
             houseZoom.draw(s_b[s]);
         }
 
-        // Create a View
-        const sf::Vector2f buttonLocation(180,BOARD_HEIGHT / 2);
-        const sf::Vector2f viewSize(120,120);
-        sf::View view(buttonLocation,viewSize);
-        view.setViewport(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
-        houseZoom.setView(view);
+        // Draw play type label
+        app.draw(gameTypeLabel);
+
+
 
         // game mode detection
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::B))
@@ -473,31 +342,28 @@ int main()
                 app.draw(message);
             }
             //check for invalid throws
-            if (!checkPlay_Status(s_b,NUM_OF_STONES))
+            if (!game.checkPlay_Status(s_b,NUM_OF_STONES))
             {
-                for (int iv=0; iv<Stone_turn; iv++)
-                {
-                    if (inValid_Throw(s_b[iv]))
+                //for (int iv=0; iv<Stone_turn; iv++)
+                //{
+                    if (inValid_Throw(s_b[Stone_turn - 1]))
                     {
                         lastThrow = false;
-                        s_b[iv].setPosition(0.0,0.0);
+                        s_b[Stone_turn - 1].setPosition(-5,-5);
                     }
-                }
+                //}
             }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && !checkPlay_Status(s_b,NUM_OF_STONES))
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && !game.checkPlay_Status(s_b,NUM_OF_STONES))
             {
                 lastThrow = true;
                 if (Stone_turn < NUM_OF_STONES)
                 {
-                    // Begin turn by setting initial speed, direction, and speed to values specified by user
+                    // Begin turn by changing status to "in play" and setting the initial speed, direction, and speed to values specified by user
                     s_b[Stone_turn].changeStatus();
-
-                    //Stone_inPlay = true;
                     s_b[Stone_turn].setPosition(1110,BOARD_HEIGHT/2);
-                    s_b[Stone_turn].setInitialSpeed(arrow.getScale().x*50);
+                    s_b[Stone_turn].setInitialSpeed(arrow.getScale().x*45);
                     s_b[Stone_turn].setSpin(spinCounter * MIN_SPIN);
 
-                    //cout << arrow.getScale().x << endl;
 
                     if(arrow.getRotation() <= 45)
                     {
@@ -508,15 +374,15 @@ int main()
                         s_b[Stone_turn].setInitialDirection((180 - (360 - arrow.getRotation()))*PI/180);
                     }
                     Stone_turn++;
-                    arrow.setRotation(0);
 
                     // Return spin icons to default settings
                     spinCounter = 0;
                     clockwiseArrow.setPosition(1325 - clockwise_w / 2,BOARD_HEIGHT/2);
                     counterClockwiseArrow.setPosition(1393 - counterClockwise_w / 2,BOARD_HEIGHT/2);
 
-                    // Return arrow to normal length
+                    // Return arrow to normal length and rotation
                     arrow.setScale(0.1,0.1);
+                    arrow.setRotation(0);
                 }
             }
 
@@ -524,7 +390,7 @@ int main()
             for (int b=0; b<NUM_OF_STONES; b++)
             {
                 // Setting Friction
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && checkPlay_Status(s_b,NUM_OF_STONES))
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && game.checkPlay_Status(s_b,NUM_OF_STONES))
                 {
                     s_b[b].setFriction(0.8*5*9.81*.0168/60);
                     app.draw(sweeping);
@@ -561,6 +427,7 @@ int main()
                     s_b[b].setFriction();
                 }
 
+                // Update speed, direction, velocity and then move Stone
                 s_b[b].setSpeed();
                 s_b[b].setDirection();
                 s_b[b].setVelocity();
@@ -588,6 +455,7 @@ int main()
                 s_b[collisionStones[0]].updatePostCollision(newStone1Velocity);
                 s_b[collisionStones[1]].updatePostCollision(newStone2Velocity);
 
+                // Move stones with new post_collision velocities while collision continues
                 while(Stone::isCollision(s_b[collisionStones[0]],s_b[collisionStones[1]]))
                 {
                     s_b[collisionStones[0]].makeMove();
@@ -595,6 +463,7 @@ int main()
                 }
             }
 
+            // Check for Wall Collisions
             int stoneNumber;
             while(Stone::isWallCollision(s_b,NUM_OF_STONES,stoneNumber, window_size))
             {
@@ -606,78 +475,43 @@ int main()
             }
 
             // Add marker above closest stone if in House
-            if(!checkPlay_Status(s_b,NUM_OF_STONES))
+            if(!game.checkPlay_Status(s_b,NUM_OF_STONES))
             {
-                int closest = findClosestStone(s_b,NUM_OF_STONES);
-                if(closest != -1 && inHouse(s_b[closest], Targets[0]))
+                int closest = game.findClosestStone(s_b,NUM_OF_STONES);
+                if(closest != -1 && game.inHouse(s_b[closest], Targets[0]))
                 {
                     sf::CircleShape triangle(5,3);
-                    triangle.setOrigin(triangle.getRadius(), triangle.getRadius());
-                    triangle.rotate(180);
-                    if(closest % 2 == 0)
-                        triangle.setFillColor(sf::Color::Green);
-                    else
-                        triangle.setFillColor(sf::Color::Yellow);
-                    triangle.setPosition(s_b[closest].getPosition().x, s_b[closest].getPosition().y - s_b[closest].getRadius() - triangle.getRadius() - 2);
+                    game.markClosestStone(triangle,closest,s_b);
+
                     app.draw(triangle);
                     houseZoom.draw(triangle);
                 }
             }
 
             // Determine winner of end and number of points earned if finished end
-            if(Stone_turn == NUM_OF_STONES && !checkPlay_Status(s_b,NUM_OF_STONES) && winnerDeclaredCounter == 0)
+            if(game.getPlayType() == 1 && Stone_turn == NUM_OF_STONES && !game.checkPlay_Status(s_b,NUM_OF_STONES) && winnerDeclaredCounter == 0)
             {
                 winnerDeclaredCounter++;
                 // Determine winner
-                int winner = findClosestStone(s_b,NUM_OF_STONES);
+                int winner = game.findClosestStone(s_b,NUM_OF_STONES);
 
                 // Determine number of points won if not a tie game
                 int points;
-                if(winner != -1 && inHouse(s_b[winner], Targets[0]))
-                {
-                    // Split up teams to find number of points earned
-                    Stone team_even[8];
-                    Stone team_odd[8];
-                    int evenCount = 0;
-                    int oddCount = 0;
-                    for(int i = 0; i < 16; i++)
-                    {
-                        if(i % 2 == 0)
-                        {
-                            team_even[evenCount] = s_b[i];
-                            evenCount++;
-                        }
-                        else
-                        {
-                            team_odd[oddCount] = s_b[i];
-                            oddCount++;
-                        }
-                    }
+                if(winner != -1 && game.inHouse(s_b[winner], Targets[0]))
+                    points = game.findPointsScored(winner,s_b,Targets[0]);
 
-                    points = calculatePointsEarned(winner,team_even, team_odd, Targets[0]);
-                }
-
-
-                if(winner == -1 || !inHouse(s_b[winner], Targets[0]))
+                // Update scoreboard if no tie
+                if(winner == -1 || !game.inHouse(s_b[winner], Targets[0]))
                     cout << "Tie game! No points earned." << endl;
-                else if(winner % 2 == 0)
-                {
-                    team_A_points += points;
-                    cout << "Team A wins " << points << " points!" << endl;
-                    sb_Text[3].setString(to_string(team_A_points));
-                }
                 else
-                {
-                    team_B_points += points;
-                    cout << "Team B wins " << points << " points!" << endl;
-                    sb_Text[5].setString(to_string(team_B_points));
-                }
-                // Display current score
-                cout << "Current Score - " << "Team A: " << team_A_points << " " << "Team B: " << team_B_points << endl;
+                    game.updateScoreboard(winner,points,sb_Text[3],sb_Text[5]);
+
+                // Print current score
+                cout << "Current Score - " << "Team A: " << game.getTeam_A_Points() << " " << "Team B: " << game.getTeam_B_Points() << endl;
             }
 
             // Begin new end if neither player has reached required number of points
-            if(Stone_turn == NUM_OF_STONES && !checkPlay_Status(s_b,NUM_OF_STONES) && team_A_points < points_to_win && team_B_points < points_to_win)
+            if(Stone_turn == NUM_OF_STONES && !game.checkPlay_Status(s_b,NUM_OF_STONES) && game.getTeam_A_Points() < game.getPointsToWin() && game.getTeam_B_Points() < game.getPointsToWin())
             {
                 Stone::resetNumberofStones();
                 Stone newStoneSet[NUM_OF_STONES];

@@ -14,15 +14,6 @@ using namespace std;
 const int BOARD_WIDTH = 1250;
 const int BOARD_HEIGHT = 165;
 
-bool inValid_Throw(Stone s)
-{
-    if (s.getPosition().x > 390 && s.getPosition().x < 1110)
-    {
-        return true;
-    }
-    return false;
-}
-
 int main()
 {
     // Create Curling game object based on user inputs
@@ -147,6 +138,7 @@ int main()
     sf::RectangleShape sb[6];
     sf::Text sb_Text[6];
     sf::Vector2f sb_size(100,50);
+    //game.drawScoreboard(sb,sb_Text,sb_size,font);
 
     sb[0].setFillColor(sf::Color::Green);
     sb[1].setFillColor(sf::Color::Black);
@@ -199,9 +191,6 @@ int main()
 
     // Initialize Scoreboard Data
     int winnerDeclaredCounter = 0;
-    //int points_to_win = 4;
-    //int team_A_points = 0;
-    //int team_B_points = 0;
 
 	// Start the game loop
     while (app.isOpen())
@@ -312,8 +301,6 @@ int main()
         // Draw play type label
         app.draw(gameTypeLabel);
 
-
-
         // game mode detection
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::B))
         {
@@ -333,20 +320,19 @@ int main()
             app.close();
         }
 
-
         // Deliver stone with speed, direction, and spin as specified by user and check for collisions
         if (Play_Mode=='B')
         {
+            // Check for invalid throws
             if (!lastThrow)
             {
                 app.draw(message);
             }
-            //check for invalid throws
             if (!game.checkPlay_Status(s_b,NUM_OF_STONES))
             {
                 //for (int iv=0; iv<Stone_turn; iv++)
                 //{
-                    if (inValid_Throw(s_b[Stone_turn - 1]))
+                    if (game.inValid_Throw(s_b[Stone_turn - 1]))
                     {
                         lastThrow = false;
                         s_b[Stone_turn - 1].setPosition(-5,-5);

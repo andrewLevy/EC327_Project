@@ -99,6 +99,48 @@ void Curling::drawRink(sf::CircleShape Targets[], sf::RectangleShape lines[], sf
     gameTypeLabel.setPosition(1330 - gameTypeLabel.getLocalBounds().width,580 - gameTypeLabel.getLocalBounds().height);
 }
 
+void Curling::drawScoreboard(sf::RectangleShape sb[], sf::Text sb_Text[], sf::Vector2f sb_size, sf::Font font)
+{
+    sb[0].setFillColor(sf::Color::Green);
+    sb[1].setFillColor(sf::Color::Black);
+    sb[2].setFillColor(sf::Color::Yellow);
+    sb_Text[0].setString("Score");
+    sb_Text[1].setString("Set");
+    sb_Text[2].setString("Score");
+
+    for (int b=0; b<6; b++)
+    {
+        if (b<3)
+        {
+            sb[b].setSize(sb_size);
+            sb[b].setOrigin(sb_size.x/2,sb_size.y/2);
+            sb[b].setOutlineColor(sf::Color::Black);
+            sb[b].setOutlineThickness(-2.0);
+            sb[b].setPosition(BOARD_WIDTH/2+(b-1)*sb_size.x,195);
+            sb_Text[b].setFont(font);
+            sb_Text[b].setOrigin(sb_Text[b].getLocalBounds().width/2,sb_Text[b].getLocalBounds().height/2);
+            sb_Text[b].setCharacterSize(30);
+            sb_Text[b].setPosition(sb[b].getPosition());
+            sb_Text[b].setColor(sf::Color::Black);
+        }
+        else
+        {
+            sb[b].setSize(sb_size);
+            sb[b].setOrigin(sb_size.x/2,sb_size.y/2);
+            sb[b].setOutlineColor(sf::Color::Black);
+            sb[b].setOutlineThickness(-2.0);
+            sb[b].setPosition(BOARD_WIDTH/2+(b-4)*sb_size.x,245);
+            sb_Text[b].setFont(font);
+            sb_Text[b].setOrigin(sb_Text[b].getLocalBounds().width/2,sb_Text[b].getCharacterSize()/2);
+            sb_Text[b].setCharacterSize(20);
+            sb_Text[b].setPosition(sb[b].getPosition());
+            sb_Text[b].setString("0");
+            sb_Text[b].setColor(sf::Color::Black);
+        }
+    }
+    sb_Text[1].setColor(sf::Color::White);
+}
+
 void Curling::createHouseView(sf::RenderWindow& houseZoom, const sf::RenderWindow& app)
 {
     // Set location of window
@@ -289,6 +331,15 @@ bool Curling::checkPlay_Status(Stone stone_array[], int numberOfStones)
         {
             return true;
         }
+    }
+    return false;
+}
+
+bool Curling::inValid_Throw(Stone s)
+{
+    if (s.getPosition().x > 390 && s.getPosition().x < 1110)
+    {
+        return true;
     }
     return false;
 }

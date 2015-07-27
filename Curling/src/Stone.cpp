@@ -38,6 +38,8 @@ Stone::Stone()
     speed = 0;
     direction = 0;
 
+
+    /*
     if(NumofStones % 2 == 0)
     {
         setFillColor(sf::Color::Green);
@@ -47,7 +49,7 @@ Stone::Stone()
     {
         setFillColor(sf::Color::Yellow);
         setPosition(1125 + NumofStones / 2 * (2*radius + 1),150);
-    }
+    }*/
     NumofStones++;
 }
 

@@ -32,9 +32,9 @@ class Stone:public sf::CircleShape
         void setVelocity();
         //void setVelocity_s(sf::Vector2f scv, sf::Vector2f svp);
 
-        static bool isCollision(Stone stone_array[], const int SIZE, int collisionStones[], sf::Vector2u windowSize);
+        static bool isCollision(Stone stone_array[], int SIZE, int collisionStones[], sf::Vector2u windowSize);
         static bool isCollision(Stone stone1, Stone stone2);
-        static bool isWallCollision(Stone stone_array[], const int SIZE, int& collisionInfo, sf::Vector2u windowSize);
+        static bool isWallCollision(Stone stone_array[], int SIZE, int& collisionInfo, sf::Vector2u windowSize);
         sf::Vector2f findVelocityPostCollision(Stone otherStone);
 
         bool checkWallCollision(sf::Vector2u ws);

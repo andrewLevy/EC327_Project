@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <iostream>
+#include "Curling.h"
 #include <Stone.h>
 #include <vector>
 #include <string>
@@ -12,7 +13,7 @@ using namespace std;
 
 const int BOARD_WIDTH = 1250;
 const int BOARD_HEIGHT = 165;
-const int NUM_OF_STONES = 16;
+//const int NUM_OF_STONES = 16;
 
 bool checkPlay_Status(Stone s[], const int N)
 {
@@ -51,7 +52,7 @@ bool inHouse(Stone stone1, sf::CircleShape target)
         return false;
 }
 
-int findClosestStone(Stone stone_array[], const int NUM_OF_STONES)
+int findClosestStone(Stone stone_array[], int NUM_OF_STONES)
 {
     // Add closest stone(s) to vector
     sf::Vector2f buttonPosition(180,BOARD_HEIGHT / 2);
@@ -150,6 +151,30 @@ int calculatePointsEarned(const int winner, Stone team_even[], Stone team_odd[],
 
 int main()
 {
+    Curling game(1,4);
+    int NUM_OF_STONES;
+    if(game.getPlayType() == 0)
+        NUM_OF_STONES = 8;
+    else
+        NUM_OF_STONES = 16;
+    Stone s_b[NUM_OF_STONES];
+    game.prepareStones(s_b);
+
+    //cout << s_b[12].getPosition().y << " " << s_b[0].getRadius() << endl;
+    /*for(int i = 0; i < 16; i++)
+    {
+        cout << s_b[i].getPosition().x << " " << s_b[i].getPosition().y << endl;
+        cout << s_b[i].getRadius() << endl << endl;
+    }*/
+    /*Stone s_b;
+    s_b.setPosition(100,100);
+    s_b.setFillColor(sf::Color::Green);
+
+    app.clear();
+    //for(int i = 0; i < 16; i++)
+        app.draw(s_b);
+    app.display();*/
+
     sf::Time t1=sf::seconds(1.0/60.0);
     sf::Time t2;
     sf::Time t_sweep[2];
@@ -318,7 +343,7 @@ int main()
     sb_Text[1].setColor(sf::Color::White);
 
     //Create stone array
-    Stone s_b[NUM_OF_STONES];
+    //Stone s_b[NUM_OF_STONES];
 
         //Create initial stone placement cirlcs
     sf::CircleShape resting_Spots[NUM_OF_STONES];
@@ -584,6 +609,7 @@ int main()
                 cout << "Stone Number: " << i << " ";
                 cout << "Postion: " << s_b[i].getPosition().x << " " << s_b[i].getPosition().y << endl;
             }*/
+
             // Check for stone collisions
             int collisionStones[2];
             while(Stone::isCollision(s_b,NUM_OF_STONES,collisionStones, window_size))
@@ -694,6 +720,7 @@ int main()
                 Stone newStoneSet[NUM_OF_STONES];
                 for(int i = 0; i < 16; i++)
                     s_b[i] = newStoneSet[i];
+                game.prepareStones(s_b);
                 Stone_turn = 0;
                 winnerDeclaredCounter = 0;
                 //s_b[0].setFillColor(sf::Color::Green);

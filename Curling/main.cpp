@@ -151,6 +151,7 @@ int calculatePointsEarned(const int winner, Stone team_even[], Stone team_odd[],
 
 int main()
 {
+    // Create Curling game object based on user inputs
     Curling game(1,4);
     int NUM_OF_STONES;
     if(game.getPlayType() == 0)
@@ -158,22 +159,9 @@ int main()
     else
         NUM_OF_STONES = 16;
     Stone s_b[NUM_OF_STONES];
+
+    // Initialize stone position and coloring
     game.prepareStones(s_b);
-
-    //cout << s_b[12].getPosition().y << " " << s_b[0].getRadius() << endl;
-    /*for(int i = 0; i < 16; i++)
-    {
-        cout << s_b[i].getPosition().x << " " << s_b[i].getPosition().y << endl;
-        cout << s_b[i].getRadius() << endl << endl;
-    }*/
-    /*Stone s_b;
-    s_b.setPosition(100,100);
-    s_b.setFillColor(sf::Color::Green);
-
-    app.clear();
-    //for(int i = 0; i < 16; i++)
-        app.draw(s_b);
-    app.display();*/
 
     sf::Time t1=sf::seconds(1.0/60.0);
     sf::Time t2;
@@ -202,38 +190,24 @@ int main()
     const sf::Vector2i houseZoomLocation(app.getPosition().x,app.getPosition().y + 170);
     houseZoom.setPosition(houseZoomLocation);
 
-    //Create board
-    // Create House
-    sf::CircleShape Targets[4];
-    float radius[4] = {60,40,20,5};
-    sf::Color T[4] = {sf::Color::Blue, sf::Color::White, sf::Color::Red, sf::Color::White};
-    for (int i=0; i<4; i++)
-    {
-        Targets[i].setRadius(radius[i]);
-        Targets[i].setOrigin(radius[i],radius[i]);
-        Targets[i].setFillColor(T[i]);
-        Targets[i].setPosition(180,BOARD_HEIGHT/2);
-        Targets[i].setOutlineColor(sf::Color::Black);
-        Targets[i].setOutlineThickness(-2.0);
-    }
-
-    // Create Boundary Lines
-    sf::RectangleShape lines[8];
-    sf::Vector2f Lpos[8] = {sf::Vector2f(0,BOARD_HEIGHT/2 - 0.5),sf::Vector2f(390-2,0),sf::Vector2f(180 -.5,0),sf::Vector2f(1110-2,0),sf::Vector2f(0,BOARD_HEIGHT - 4),sf::Vector2f(240,BOARD_HEIGHT/2+15),sf::Vector2f(240,BOARD_HEIGHT/2-15),sf::Vector2f(120-.5,0)};
-    sf::Vector2f Lsize[8] = {sf::Vector2f(1110,1),sf::Vector2f(4,BOARD_HEIGHT),sf::Vector2f(1,BOARD_HEIGHT),sf::Vector2f(4,BOARD_HEIGHT),sf::Vector2f(BOARD_WIDTH,4),sf::Vector2f(1110-240,.5),sf::Vector2f(1110-240,.5),sf::Vector2f(1,BOARD_HEIGHT)};
-    for (int i=0; i<8; i++)
-    {
-        lines[i].setSize(Lsize[i]);
-        lines[i].setFillColor(sf::Color::Black);
-        lines[i].setPosition(Lpos[i]);
-    }
-
-    //Message
+    // Upload font
     sf::Font font;
     if (!font.loadFromFile("sansation.ttf"))
     {
         return EXIT_FAILURE;
     }
+
+    // Create House, boundary lines, and initial placement circles
+    sf::CircleShape Targets[4];
+    sf::RectangleShape lines[8];
+    sf::CircleShape resting_Spots[NUM_OF_STONES];
+    //sf::RectangleShape sb[6];
+    //sf::Text sb_Text[6];
+    //sf::Vector2f sb_size(100,50);
+    //Create initial stone placement cirlcs
+    game.drawRink(Targets,lines, resting_Spots,s_b,NUM_OF_STONES);
+
+    // Invalid Throw Message
     sf::Text message("Invalid Throw",font,15);
     message.setPosition(1000,145);
     message.setColor(sf::Color::Red);
@@ -297,12 +271,11 @@ int main()
     int spinCounter = 0;
 
     //Create the Score Board
+
     sf::RectangleShape sb[6];
     sf::Text sb_Text[6];
+    sf::Vector2f sb_size(100,50);
 
-    sf::Vector2f sb_size;
-    sb_size.x = 100;
-    sb_size.y = 50;
     sb[0].setFillColor(sf::Color::Green);
     sb[1].setFillColor(sf::Color::Black);
     sb[2].setFillColor(sf::Color::Yellow);
@@ -345,17 +318,7 @@ int main()
     //Create stone array
     //Stone s_b[NUM_OF_STONES];
 
-        //Create initial stone placement cirlcs
-    sf::CircleShape resting_Spots[NUM_OF_STONES];
-    for (int rs=0; rs<NUM_OF_STONES; rs++)
-    {
-        resting_Spots[rs].setRadius(s_b[rs].getRadius());
-        resting_Spots[rs].setFillColor(sf::Color::White);
-        resting_Spots[rs].setOutlineColor(sf::Color::Black);
-        resting_Spots[rs].setOutlineThickness(-1.0);
-        resting_Spots[rs].setOrigin(s_b[rs].getRadius(),s_b[rs].getRadius());
-        resting_Spots[rs].setPosition(s_b[rs].getPosition());
-    }
+
 
 
     //sf::Vector2u window_size = app.getSize();

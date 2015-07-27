@@ -9,8 +9,8 @@ class Curling
 public:
     Curling(int newPlayType, int newPointsToWin);
 
-    void drawRink(sf::CircleShape Targets[], sf::RectangleShape Lines[]);
     void prepareStones(Stone stone_array[]);
+    void drawRink(sf::CircleShape Targets[], sf::RectangleShape Lines[], sf::CircleShape resting_Spots[], Stone s_b[], int NUM_OF_STONES);
 
     int getPlayType();
     int getPointsToWin();

@@ -9,6 +9,8 @@ using namespace std;
 
 const int BOARD_WIDTH = 1250;
 const int BOARD_HEIGHT = 165;
+const sf::Vector2f zoomButtonPosition(180,400);
+const float zoomRatio = 2.5;
 
 Curling::Curling(int newPlayType, int newPointsToWin)
 {
@@ -97,6 +99,35 @@ void Curling::drawRink(sf::CircleShape Targets[], sf::RectangleShape lines[], sf
     gameTypeLabel.setCharacterSize(30);
     //gameTypeLabel.setOrigin(gameTypeLabel.getLocalBounds().width,gameTypeLabel.getLocalBounds().height);
     gameTypeLabel.setPosition(1330 - gameTypeLabel.getLocalBounds().width,580 - gameTypeLabel.getLocalBounds().height);
+}
+
+void Curling::drawHouseZoom(sf::CircleShape houseTargets[], sf::RectangleShape houseLines[])
+{
+    // Create House
+    float radius[4] = {60,40,20,5};
+    for(int i = 0; i < 4; i++)
+        radius[i] *= zoomRatio;
+
+    sf::Color T[4] = {sf::Color::Blue, sf::Color::White, sf::Color::Red, sf::Color::White};
+    for (int i=0; i<4; i++)
+    {
+        houseTargets[i].setRadius(radius[i]);
+        houseTargets[i].setOrigin(radius[i],radius[i]);
+        houseTargets[i].setFillColor(T[i]);
+        houseTargets[i].setPosition(zoomButtonPosition);
+        houseTargets[i].setOutlineColor(sf::Color::Black);
+        houseTargets[i].setOutlineThickness(-4.0);
+    }
+
+    // Draw House Lines
+    sf::Vector2f lineSize[2] = {sf::Vector2f(radius[0] * 2,zoomRatio),sf::Vector2f(zoomRatio,radius[0] * 2)};
+    sf::Vector2f linePosition[2] = {sf::Vector2f(zoomButtonPosition.x - radius[0], zoomButtonPosition.y - zoomRatio / 2),sf::Vector2f(zoomButtonPosition.x - zoomRatio / 2, zoomButtonPosition.y - radius[0])};
+    for(int i = 0; i < 2; i++)
+    {
+        houseLines[i].setPosition(linePosition[i]);
+        houseLines[i].setSize(lineSize[i]);
+        houseLines[i].setFillColor(sf::Color::Black);
+    }
 }
 
 void Curling::drawScoreboard(sf::RectangleShape sb[], sf::Text sb_Text[], sf::Vector2f sb_size, sf::Font font)
@@ -224,12 +255,107 @@ int Curling::findClosestStone(Stone stone_array[], int NUM_OF_STONES)
     return closestStones[0];
 }
 
+/*int Curling::findClosestStone(const vector<Stone>& houseStones)
+{
+    // Add closest stone(s) to vector
+    sf::Vector2f buttonPosition(180,BOARD_HEIGHT / 2);
+    float closest_distance = getDistance(houseStones[0].getPosition(), buttonPosition);
+    vector<int> closestStones;
+    if(houseStones[0].getStatus())
+        closestStones.push_back(0);
+    else
+        closestStones.push_back(-1);
+
+    for(int i = 1; i < houseStones.size(); i++)
+    {
+        if(houseStones[i].getStatus())
+        {
+            float next_distance = getDistance(houseStones[i].getPosition(), buttonPosition);
+            if(next_distance == closest_distance)
+            {
+                if(houseStones[0] == -1)
+                {
+                    closestStones.clear();
+                    closestStones.push_back(i);
+                }
+                else
+                {
+                    closestStones.push_back(i);
+                }
+            }
+            else if(next_distance < closest_distance)
+            {
+                closest_distance = next_distance;
+                closestStones.clear();
+                closestStones.push_back(i);
+            }
+        }
+    }
+
+    // If tie determine if stones come from same or both teams
+    bool team_even = false;
+    bool team_odd = false;
+    if(closestStones.size() > 1)
+    {
+        for(int i = 0; i < closestStones.size(); i++)
+        {
+            if(closestStones[i] % 2 == 0)
+                team_even = true;
+            else
+                team_odd = true;
+        }
+
+        if(team_even && team_odd)
+        {
+            closestStones.clear();
+            closestStones.push_back(-1);
+        }
+    }
+
+    // There was a tie game if -1 is returned
+    return closestStones[0];
+}*/
+
 bool Curling::inHouse(Stone stone1, sf::CircleShape target)
 {
     if(getDistance(stone1.getPosition(), target.getPosition()) - stone1.getRadius() <= target.getRadius())
         return true;
     else
         return false;
+}
+
+void Curling::updateHouseZoom(Stone stone_array[], vector<Stone>& houseStones, int numberOfStones, sf::CircleShape Target)
+{
+    houseStones.clear();
+    sf::Vector2f positionFromButton;
+    for(int i = 0; i < numberOfStones; i++)
+    {
+        if(inHouse(stone_array[i], Target))
+        {
+            // Find position relative to button
+            positionFromButton.x = stone_array[i].getPosition().x - Target.getPosition().x;
+            positionFromButton.y = stone_array[i].getPosition().y - Target.getPosition().y;
+
+            // Add house stone to house stone vector
+            Stone houseStone;
+            houseStone.setRadius(zoomRatio * houseStone.getRadius());
+            houseStone.setOrigin(houseStone.getRadius(), houseStone.getRadius());
+            houseStone.setOutlineThickness(houseStone.getOutlineThickness() * zoomRatio);
+            if(getPlayType() == 0)
+                houseStone.setFillColor(sf::Color::Green);
+            else if(i % 2 == 0)
+                houseStone.setFillColor(sf::Color::Green);
+            else
+                houseStone.setFillColor(sf::Color::Yellow);
+
+            float x_newPosition = positionFromButton.x * zoomRatio;
+            float y_newPosition = positionFromButton.y * zoomRatio;
+            houseStone.setPosition(zoomButtonPosition.x + x_newPosition, zoomButtonPosition.y + y_newPosition);
+
+            houseStones.push_back(houseStone);
+        }
+
+    }
 }
 
 void Curling::markClosestStone(sf::CircleShape& triangle, int closestStoneIndex, Stone stone_array[])

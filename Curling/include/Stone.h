@@ -51,7 +51,7 @@ class Stone:public sf::CircleShape
     float friction;
     bool inPlay = false;
 
-    static int NumofStones;
+    //static int NumofStones;
     sf::Vector2f pos;
     sf::Vector2f v;
 

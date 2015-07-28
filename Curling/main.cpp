@@ -69,11 +69,27 @@ int main()
     int setNum = 0;
 
 
+
     sf::RenderWindow app(sf::VideoMode(1400, 600), "SFML window");
+
+    /*const sf::Vector2f screenCenter(700,300);
+    const sf::Vector2f screenSize(1400,600);
+    sf::View view1(screenCenter,screenSize);
+    view1.setViewport(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
+    app.setView(view1);
+
+    const sf::Vector2f buttonLocation(180,BOARD_HEIGHT / 2);
+    const sf::Vector2f viewSize(120,120);
+    sf::View view2(buttonLocation,viewSize);
+    view2.setViewport(sf::FloatRect(0.4f, 0.4f, .3f, .3f));
+    app.setView(view2);*/
 
     // Create window displaying close up of House
     sf::RenderWindow houseZoom(sf::VideoMode(350, 350), "House Zoom");
     game.createHouseView(houseZoom,app);
+
+
+
 
     // Upload font
     sf::Font font;
@@ -88,6 +104,11 @@ int main()
     sf::CircleShape resting_Spots[NUM_OF_STONES];
     sf::Text gameTypeLabel;
     game.drawRink(Targets,lines, resting_Spots,s_b,NUM_OF_STONES,gameTypeLabel,font);
+
+    // Draw zoom of House
+    sf::CircleShape houseTargets[4];
+    sf::RectangleShape houseLines[2];
+    game.drawHouseZoom(houseTargets,houseLines);
 
     // Invalid Throw Message
     sf::Text message("Invalid Throw",font,15);
@@ -286,6 +307,7 @@ int main()
         for (int t=0; t<4; t++)
         {
             app.draw(Targets[t]);
+            app.draw(houseTargets[t]);
             houseZoom.draw(Targets[t]);
         }
 
@@ -295,6 +317,9 @@ int main()
             app.draw(lines[l]);
             houseZoom.draw(lines[l]);
         }
+
+        for(int i = 0; i < 2; i++)
+            app.draw(houseLines[i]);
 
         //Draw Score Board
         for (int b=0; b<6; b++)
@@ -486,6 +511,12 @@ int main()
                 s_b[stoneNumber].setPosition(-5,-5);
             }
 
+            // Display stone in House zoom if applicable
+            vector<Stone> houseStones;
+            game.updateHouseZoom(s_b,houseStones,NUM_OF_STONES,Targets[0]);
+            for(int i = 0; i < houseStones.size(); i++)
+                app.draw(houseStones[i]);
+
             // Add marker above closest stone if in House
             if(!game.checkPlay_Status(s_b,NUM_OF_STONES))
             {
@@ -498,6 +529,14 @@ int main()
                     app.draw(triangle);
                     houseZoom.draw(triangle);
                 }
+
+                // Add marker to closest stone in House view
+                //int closestInHouse = game.findClosestStone(houseStones);
+                /*if(closestInHouse != -1)
+                {
+                    sf::CircleShape triangle(5 * 2.5,3);
+
+                }*/
             }
 
             // Determine winner of end and number of points earned if finished end
@@ -525,18 +564,15 @@ int main()
             // Begin new end if neither player has reached required number of points
             if(Stone_turn == NUM_OF_STONES && !game.checkPlay_Status(s_b,NUM_OF_STONES) && game.getTeam_A_Points() < game.getPointsToWin() && game.getTeam_B_Points() < game.getPointsToWin())
             {
-                Stone::resetNumberofStones();
+                //Stone::resetNumberofStones();
                 Stone newStoneSet[NUM_OF_STONES];
-                for(int i = 0; i < 16; i++)
+                for(int i = 0; i < NUM_OF_STONES; i++)
                     s_b[i] = newStoneSet[i];
                 game.prepareStones(s_b);
                 Stone_turn = 0;
                 winnerDeclaredCounter = 0;
-                //s_b[0].setFillColor(sf::Color::Green);
-                //s_b[1].setFillColor(sf::Color::Yellow);
-                //for(int i = 0; i < 16; i++)
-                    //cout << s_b[i].getPosition().x << " " << s_b[i].getPosition().y << " " << s_b[i].getFillColor().r.toInteger() << " " << s_b[i].getFillColor().g << " " << s_b[i].getFillColor().b << endl;
             }
+
         // Pause Game
         else if (Play_Mode == 'P')
         {

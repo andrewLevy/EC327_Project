@@ -8,7 +8,7 @@
 
 using namespace std;
 
-int Stone::NumofStones = 0;
+//int Stone::NumofStones = 0;
 //int evenNumberStones = 0;
 //int oddNumberStones = 0;
 
@@ -50,7 +50,7 @@ Stone::Stone()
         setFillColor(sf::Color::Yellow);
         setPosition(1125 + NumofStones / 2 * (2*radius + 1),150);
     }*/
-    NumofStones++;
+    //NumofStones++;
 }
 
 
@@ -134,10 +134,10 @@ float Stone::getSpin()
     return spin;
 }
 
-int Stone::getNumberofStones()
+/*int Stone::getNumberofStones()
 {
     return Stone::NumofStones;
-}
+}*/
 
 void Stone::setVelocity()
 {
@@ -196,10 +196,10 @@ bool Stone::checkStoneCollision(Stone s_o)
     v=v-(dot_product((v-scv),(this->getPosition()-svp))/(norm_2(this->getPosition()-svp)))*(this->getPosition()-svp);
 }*/
 
-void Stone::resetNumberofStones()
+/*void Stone::resetNumberofStones()
 {
     Stone::NumofStones = 0;
-}
+}*/
 
 bool Stone::getStatus()
 {
@@ -284,10 +284,12 @@ sf::Vector2f Stone::findVelocityPostCollision(Stone otherStone)
     float dotProduct2 = positionDifference.x * positionDifference.x + positionDifference.y * positionDifference.y;
 
     sf::Vector2f intermediateVector;
-    intermediateVector.x = 0.9*(dotProduct1 / dotProduct2) * positionDifference.x;
-    intermediateVector.y = 0.9*(dotProduct1 / dotProduct2) * positionDifference.y;
+    intermediateVector.x = (dotProduct1 / dotProduct2) * positionDifference.x;
+    intermediateVector.y = (dotProduct1 / dotProduct2) * positionDifference.y;
 
-    newVelocity = getVelocity() - intermediateVector;
+    newVelocity = (getVelocity() - intermediateVector);
+    newVelocity.x * 0.9;
+    newVelocity.y * 0.9;
     return newVelocity;
 }
 

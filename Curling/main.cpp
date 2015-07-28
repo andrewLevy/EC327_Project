@@ -14,6 +14,26 @@ using namespace std;
 const int BOARD_WIDTH = 1250;
 const int BOARD_HEIGHT = 165;
 
+int getClostest_movingStone(Stone s[], sf::Vector2i mouse_loc, const int N)
+{
+    int dist = 5000;
+    int dist_i;
+    int temp_dist;
+    for (int f=0; f<N; f++)
+    {
+        if (s[f].getSpeed() != 0)
+        {
+            temp_dist = sqrt((s[f].getPosition().x-mouse_loc.x)*(s[f].getPosition().x-mouse_loc.x) + (s[f].getPosition().y-mouse_loc.y)*(s[f].getPosition().y-mouse_loc.y));
+            if (temp_dist < dist)
+            {
+                dist = temp_dist;
+                dist_i = f;
+            }
+        }
+    }
+    return dist_i;
+}
+
 int main()
 {
     // Create Curling game object based on user inputs
@@ -33,8 +53,6 @@ int main()
     sf::Time t_sweep[2];
     sf::Clock myclock;
 
-
-    const int CHECK = 20;
 
     // Change below constants to update minimum spin
     const float DEGREE_PER_TURN = 10;
@@ -179,12 +197,6 @@ int main()
     }
     sb_Text[1].setColor(sf::Color::White);
 
-
-
-
-
-
-    //sf::Vector2u window_size = app.getSize();
     sf::Vector2u window_size;
     window_size.x = BOARD_WIDTH;
     window_size.y = BOARD_HEIGHT;
@@ -330,14 +342,11 @@ int main()
             }
             if (!game.checkPlay_Status(s_b,NUM_OF_STONES))
             {
-                //for (int iv=0; iv<Stone_turn; iv++)
-                //{
-                    if (game.inValid_Throw(s_b[Stone_turn - 1]))
-                    {
-                        lastThrow = false;
-                        s_b[Stone_turn - 1].setPosition(-5,-5);
-                    }
-                //}
+                if (game.inValid_Throw(s_b[Stone_turn - 1]))
+                {
+                    lastThrow = false;
+                    s_b[Stone_turn - 1].setPosition(-5,-5);
+                }
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && !game.checkPlay_Status(s_b,NUM_OF_STONES))
             {
@@ -378,7 +387,24 @@ int main()
                 // Setting Friction
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && game.checkPlay_Status(s_b,NUM_OF_STONES))
                 {
-                    s_b[b].setFriction(0.8*5*9.81*.0168/60);
+                    if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
+                    {
+                        int x = getClostest_movingStone(s_b,sf::Mouse::getPosition(),NUM_OF_STONES);
+                        s_b[x].setFriction(0.8*5*9.81*.0168/60);
+                        pos_sw_x = s_b[x].getPosition().x;
+                        pos_sw_y = s_b[x].getPosition().y;
+                    }
+                    else
+                    {
+                        for (int s=0; s<Stone_turn; s++)
+                        {
+                            if (s_b[s].getSpeed() != 0)
+                            {
+                                pos_sw_x = s_b[s].getPosition().x;
+                                pos_sw_y = s_b[s].getPosition().y;
+                            }
+                        }
+                    }
                     app.draw(sweeping);
                     houseZoom.draw(sweeping);
                     if (t_sweep[0] == sf::seconds(0.0))
@@ -395,14 +421,14 @@ int main()
                         t_sweep[0] = t_sweep[1];
                         ms *= -1;
                     }
-                    for (int s=0; s<Stone_turn; s++)
+                    /*for (int s=0; s<Stone_turn; s++)
                     {
                         if (s_b[s].getSpeed() != 0)
                         {
                             pos_sw_x = s_b[s].getPosition().x;
                             pos_sw_y = s_b[s].getPosition().y;
                         }
-                    }
+                    }*/
                     sweeping.setPosition(pos_sw_x-8.0,pos_sw_y-18.0+5.0*ms);
                 }
                 else

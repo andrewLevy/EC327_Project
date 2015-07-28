@@ -16,19 +16,21 @@
 	<iostream>
 	<Stone.h>
 
-1437934310 source:/home/aviclaws/Documents/EC327/Project/EC327_Project/Curling/main.cpp
+1438051458 source:/home/aviclaws/Documents/EC327/Project/EC327_Project/Curling/main.cpp
 	<SFML/Graphics.hpp>
 	<stdlib.h>
 	<math.h>
 	<iostream>
+	"Curling.h"
 	<Stone.h>
 	<vector>
+	<string>
 
-1437929445 /home/aviclaws/Documents/EC327/Project/EC327_Project/Curling/include/Stone.h
+1438045001 /home/aviclaws/Documents/EC327/Project/EC327_Project/Curling/include/Stone.h
 	<SFML/Graphics.hpp>
 	<string.h>
 
-1437929598 source:/home/aviclaws/Documents/EC327/Project/EC327_Project/Curling/src/Stone.cpp
+1438045001 source:/home/aviclaws/Documents/EC327/Project/EC327_Project/Curling/src/Stone.cpp
 	"Stone.h"
 	<stdlib.h>
 	<math.h>
@@ -63,6 +65,18 @@
 	<string>
 
 1438030769 /home/levya/Desktop/EC327_Project/Curling/Curling.h
+	<SFML/Graphics.hpp>
+	<Stone.h>
+
+1438045001 source:/home/aviclaws/Documents/EC327/Project/EC327_Project/Curling/Curling.cpp
+	"Curling.h"
+	<SFML/Graphics.hpp>
+	"Stone.h"
+	<iostream>
+	<vector>
+	<string>
+
+1438045001 /home/aviclaws/Documents/EC327/Project/EC327_Project/Curling/Curling.h
 	<SFML/Graphics.hpp>
 	<Stone.h>
 

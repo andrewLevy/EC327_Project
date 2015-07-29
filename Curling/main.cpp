@@ -844,6 +844,28 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::Cir
         stoneColorPreviews[i].setPosition(stonePositions[i]);
         //menu.draw(stoneColorPreviews[i]);
     }
+
+    //Scoring options
+    sf::RectangleShape s_bgr[2];
+    sf::Text scoring_style[2];
+    scoring_style[0].setString("Sets");
+    scoring_style[1].setString("Targets");
+    sf::Vector2f bgr_size(150,50);
+    for (int s=0; s<2; s++)
+    {
+        s_bgr[s].setSize(bgr_size);
+        s_bgr[s].setOrigin(bgr_size.x/2,bgr_size.y/2);
+        s_bgr[s].setFillColor(sf::Color(160,160,160));
+        s_bgr[s].setPosition(400+(s*150+4),500);
+        s_bgr[s].setOutlineThickness(2);
+        s_bgr[s].setOutlineColor(sf::Color::Black);
+        scoring_style[s].setFont(font);
+        scoring_style[s].setCharacterSize(30);
+        scoring_style[s].setOrigin(scoring_style[s].getLocalBounds().width/2,scoring_style[s].getLocalBounds().height/2);
+        scoring_style[s].setPosition(s_bgr[s].getPosition());
+        menu.draw(s_bgr[s]);
+        menu.draw(scoring_style[s]);
+    }
 }
 
 float getDistance(sf::Vector2f vector1, sf::Vector2f vector2)

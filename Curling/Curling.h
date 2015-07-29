@@ -16,17 +16,24 @@ public:
     void drawRink(sf::CircleShape Targets[], sf::RectangleShape Lines[], sf::CircleShape resting_Spots[], Stone s_b[], int NUM_OF_STONES, sf::Text& gameTypeLabel, sf::Font& font);
     void drawHouseZoom(sf::CircleShape houseTargets[], sf::RectangleShape houseLines[]);
     void drawScoreboard(sf::RectangleShape sb[], sf::Text sb_Text[], sf::Vector2f sb_size, sf::Font font);
+
     void createHouseView(sf::RenderWindow& houseZoom, const sf::RenderWindow& app);
+
     float getDistance(sf::Vector2f vector1, sf::Vector2f vector2);
     int findClosestStone(Stone stone_array[], int NUM_OF_STONES);
     int findClosestStone(const vector<Stone>& houseStones);
+    int getClostest_movingStone(Stone s[], sf::Vector2i mouse_loc, const int N);
+
     bool inHouse(Stone stone1, sf::CircleShape target);
+
     void updateHouseZoom(Stone stone_array[], vector<Stone>& houseStones, int numberOfStones, sf::CircleShape Target);
+
     void markClosestStone(sf::CircleShape& triangle, int closestStoneIndex, Stone stone_array[]);
     int findPointsScored(int winner, Stone stone_array[], sf::CircleShape Target);
     int getPoints(Stone winning_team[], const float closest_opponent, sf::CircleShape target);
     int calculatePointsEarned(const int winner, Stone team_even[], Stone team_odd[], sf::CircleShape target);
     void updateScoreboard(int winner, int points, sf::Text& team_A_score, sf::Text& team_B_score);
+
     bool checkPlay_Status(Stone stone_array[], int numberOfStones);
     bool inValid_Throw(Stone s);
 

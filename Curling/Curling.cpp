@@ -255,6 +255,26 @@ int Curling::findClosestStone(Stone stone_array[], int NUM_OF_STONES)
     return closestStones[0];
 }
 
+int Curling::getClostest_movingStone(Stone s[], sf::Vector2i mouse_loc, const int N)
+{
+    int dist = 50000;
+    int dist_i;
+    int temp_dist;
+    for (int f=0; f<N; f++)
+    {
+        if (s[f].getSpeed() != 0)
+        {
+            temp_dist = sqrt((s[f].getPosition().x-mouse_loc.x)*(s[f].getPosition().x-mouse_loc.x) + (s[f].getPosition().y-mouse_loc.y)*(s[f].getPosition().y-mouse_loc.y));
+            if (temp_dist < dist)
+            {
+                dist = temp_dist;
+                dist_i = f;
+            }
+        }
+    }
+    return dist_i;
+}
+
 /*int Curling::findClosestStone(const vector<Stone>& houseStones)
 {
     // Add closest stone(s) to vector

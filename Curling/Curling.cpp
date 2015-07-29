@@ -14,13 +14,15 @@ const int BOARD_HEIGHT = 165;
 const sf::Vector2f zoomButtonPosition(180,375);
 const float zoomRatio = 2.5;
 
-Curling::Curling(int newPlayType, int newPointsToWin)
+Curling::Curling(int newPlayType, int newPointsToWin, sf::Color newTeamAColor, sf::Color newTeamBColor)
 {
     // Data field to specity game type includes practice (playType = 0) or One-on-One (playType = 1)
     playType = newPlayType;
     pointsToWin = newPointsToWin;
     team_A_points = 0;
     team_B_points = 0;
+    team_A_color = newTeamAColor;
+    team_B_color = newTeamBColor;
 }
 
 Curling::~Curling()
@@ -35,7 +37,7 @@ void Curling::prepareStones(Stone stone_array[])
         // Specify positioning and fill color for stone array
         for(int i = 0; i < 8; i++)
         {
-            stone_array[i].setFillColor(sf::Color::Green);
+            stone_array[i].setFillColor(getTeam_A_Color());
             stone_array[i].setPosition(1125 + i * (2 * stone_array[i].getRadius() + 1),15);
         }
     }
@@ -46,12 +48,12 @@ void Curling::prepareStones(Stone stone_array[])
         {
             if(i % 2 == 0)
             {
-                stone_array[i].setFillColor(sf::Color::Green);
+                stone_array[i].setFillColor(getTeam_A_Color());
                 stone_array[i].setPosition(1125 + i / 2 * (2 * stone_array[i].getRadius() + 1),15);
             }
             else
             {
-                stone_array[i].setFillColor(sf::Color::Yellow);
+                stone_array[i].setFillColor(getTeam_B_Color());
                 stone_array[i].setPosition(1125 + i / 2 * (2 * stone_array[i].getRadius() + 1),150);
             }
         }
@@ -341,11 +343,11 @@ void Curling::updateHouseZoom(const Stone stone_array[], Stone houseStones[], in
             houseStones[i].setOrigin(houseStones[i].getRadius(), houseStones[i].getRadius());
             houseStones[i].setOutlineThickness(houseStones[i].getOutlineThickness() * zoomRatio);
             if(getPlayType() == 0)
-                houseStones[i].setFillColor(sf::Color::Green);
+                houseStones[i].setFillColor(getTeam_A_Color());
             else if(i % 2 == 0)
-                houseStones[i].setFillColor(sf::Color::Green);
+                houseStones[i].setFillColor(getTeam_A_Color());
             else
-                houseStones[i].setFillColor(sf::Color::Yellow);
+                houseStones[i].setFillColor(getTeam_B_Color());
 
             float x_newPosition = positionFromButton.x * zoomRatio;
             float y_newPosition = positionFromButton.y * zoomRatio;
@@ -362,11 +364,11 @@ void Curling::markClosestStone(sf::CircleShape& triangle, int closestStoneIndex,
 
     // Set color of market to team color of closest stone
     if(getPlayType() == 0)
-        triangle.setFillColor(sf::Color::Green);
+        triangle.setFillColor(getTeam_A_Color());
     else if(closestStoneIndex % 2 == 0)
-        triangle.setFillColor(sf::Color::Green);
+        triangle.setFillColor(getTeam_A_Color());
     else
-        triangle.setFillColor(sf::Color::Yellow);
+        triangle.setFillColor(getTeam_B_Color());
 
     // Set position of marker above closest stone
     triangle.setPosition(stone_array[closestStoneIndex].getPosition().x, stone_array[closestStoneIndex].getPosition().y - stone_array[closestStoneIndex].getRadius() - triangle.getRadius() - triangle.getRadius() / 2.0);
@@ -487,6 +489,16 @@ int Curling::getTeam_A_Points()
 int Curling::getTeam_B_Points()
 {
     return team_B_points;
+}
+
+sf::Color Curling::getTeam_A_Color()
+{
+    return team_A_color;
+}
+
+sf::Color Curling::getTeam_B_Color()
+{
+    return team_B_color;
 }
 
 void Curling::updateTeam_A_Points(int points)

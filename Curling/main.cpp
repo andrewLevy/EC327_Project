@@ -702,13 +702,13 @@ Curling menu_launch()
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
             {
                 menu.close();
-                return Curling(0,UI_pt_win);
+                return Curling(0,UI_pt_win,sf::Color::Green,sf::Color::Green);
             }
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
             {
                 Program_on = false;
                 menu.close();
-                return Curling(2,UI_pt_win);
+                return Curling(2,UI_pt_win,sf::Color::Green,sf::Color::Green);
             }
 
         }
@@ -721,12 +721,15 @@ Curling menu_launch()
                 stoneColorPreviews[1].setFillColor(sf::Color(230,230,230));
             }
 
-            if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
+            while(sf::Mouse::isButtonPressed(sf::Mouse::Left))
             {
                 mouseClickPosition_int = sf::Mouse::getPosition();
                 mouseClickPosition.x = mouseClickPosition_int.x;
                 mouseClickPosition.y = mouseClickPosition_int.y;
                 cout << mouseClickPosition.x << " " << mouseClickPosition.y << endl;
+                cout << colorChoices[7].getPosition().x << " " << colorChoices[7].getPosition().y << endl;
+                cout << getDistance(mouseClickPosition,colorChoices[7].getPosition()) << endl;
+                cout << colorChoices[7].getRadius() << endl;
                 if(isColorPressed(mouseClickPosition,colorChoices,selectedColor))
                 {
                     userSettingsChanged = true;
@@ -743,11 +746,13 @@ Curling menu_launch()
             // Draw stone color previews
             for(int i = 0; i < 2; i++)
                 menu.draw(stoneColorPreviews[i]);
+            for(int i = 0; i < 8; i++)
+                menu.draw(colorChoices[i]);
 
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
             {
                 menu.close();
-                return Curling(1,UI_pt_win);
+                return Curling(1,UI_pt_win,stoneColorPreviews[0].getFillColor(),stoneColorPreviews[1].getFillColor());
             }
         }
 
@@ -755,7 +760,7 @@ Curling menu_launch()
         sf::sleep(m1);
         m2=menu_clock.getElapsedTime();
     }
-    return Curling(2,UI_pt_win);
+    return Curling(2,UI_pt_win,sf::Color::Green,sf::Color::Green);
 }
 
 Curling options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[])
@@ -792,11 +797,11 @@ Curling options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::
     {
         colorChoices[i].setFillColor(colorOptions[i]);
         colorChoices[i].setRadius(colorRadius);
-        colorChoices[i].setOrigin(colorChoices[i].getRadius(),colorChoices[i].getRadius());
+        colorChoices[i].setOrigin(25,25);
         colorChoices[i].setOutlineColor(sf::Color::Black);
         colorChoices[i].setOutlineThickness(-1);
         colorChoices[i].setPosition(1000 + i % 4 * 2 * (colorChoices[i].getRadius() + 5),300 + i / 4 * 2 * (colorChoices[i].getRadius() + 5));
-        menu.draw(colorChoices[i]);
+        //menu.draw(colorChoices[i]);
     }
 
     // Create labels above preview of stone with user selected color
@@ -819,6 +824,7 @@ Curling options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::
     for(int i = 0; i < 2; i++)
     {
         stoneColorPreviews[i].setRadius(stonePreviewRadius);
+        stoneColorPreviews[i].setOutlineThickness(40 / (10*(11.4/12)*.5 + 2) * -2.0);
         stoneColorPreviews[i].setOrigin(stoneColorPreviews[i].getRadius(),stoneColorPreviews[i].getRadius());
         //stoneColorPreviews[i].setFillColor(colorOptions[i]);
         stoneColorPreviews[i].setPosition(stonePositions[i]);

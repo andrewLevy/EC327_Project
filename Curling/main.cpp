@@ -167,26 +167,7 @@ int main()
 
 
 
-        sf::RenderWindow app(sf::VideoMode(1400, 600), "SFML window");
-
-        /*const sf::Vector2f screenCenter(700,300);
-        const sf::Vector2f screenSize(1400,600);
-        sf::View view1(screenCenter,screenSize);
-        view1.setViewport(sf::FloatRect(0.f, 0.f, 1.f, 1.f));
-        app.setView(view1);
-
-        const sf::Vector2f buttonLocation(180,BOARD_HEIGHT / 2);
-        const sf::Vector2f viewSize(120,120);
-        sf::View view2(buttonLocation,viewSize);
-        view2.setViewport(sf::FloatRect(0.4f, 0.4f, .3f, .3f));
-        app.setView(view2);*/
-
-        // Create window displaying close up of House
-        sf::RenderWindow houseZoom(sf::VideoMode(350, 350), "House Zoom");
-        game.createHouseView(houseZoom,app);
-
-
-
+        sf::RenderWindow app(sf::VideoMode(1325, 600), "SFML window");
 
         // Upload font
         sf::Font font;
@@ -206,6 +187,15 @@ int main()
         sf::CircleShape houseTargets[4];
         sf::RectangleShape houseLines[2];
         game.drawHouseZoom(houseTargets,houseLines);
+
+        // Create House close-up label
+        sf::Text houseZoomLabel;
+        houseZoomLabel.setFont(font);
+        houseZoomLabel.setString("House Close-Up");
+        houseZoomLabel.setCharacterSize(15);
+        houseZoomLabel.setColor(sf::Color::Black);
+        houseZoomLabel.setOrigin(houseZoomLabel.getLocalBounds().width / 2,0);
+        houseZoomLabel.setPosition(180,BOARD_HEIGHT + 13);
 
         // Invalid Throw Message
         sf::Text message("Invalid Throw",font,15);
@@ -229,17 +219,20 @@ int main()
         float pos_sw_y = 0.0;
 
 
-        //launch arrow
+        //Launch arrow for both board and zoomed in view of user inputs
         sf::Texture arrow_pic;
         if (!arrow_pic.loadFromFile("arrow.png"))
         {
             return EXIT_FAILURE;
         }
         sf::Sprite arrow(arrow_pic);
+        sf::Sprite arrowZoom(arrow_pic);
         arrow.scale(0.1,0.1);
+        arrowZoom.scale(0.1,0.1);
         float arrow_w = arrow.getTextureRect().width;
         float arrow_h = arrow.getTextureRect().height;
         arrow.setOrigin(arrow_w,arrow_h/2-5);
+        arrowZoom.setOrigin(arrow_w,arrow_h/2-5);
         arrow.setPosition(1110,BOARD_HEIGHT/2);
 
 
@@ -340,7 +333,6 @@ int main()
                 {
                     //Menu_open = true;
                     app.close();
-                    houseZoom.close();
                 }
             }
 
@@ -348,14 +340,17 @@ int main()
             if (Play_Mode != 'P')
             {
                 app.clear(sf::Color(255,255,255));
-                houseZoom.clear(sf::Color::White);
             }
 
-            // Draw the board
-            Stone_inPlay = game.checkPlay_Status(s_b, NUM_OF_STONES);
 
+            Stone_inPlay = game.checkPlay_Status(s_b, NUM_OF_STONES);
+            sf::RectangleShape boundaryLines[4];
+            Stone zoomStone = s_b[Stone_turn];
+            // Place next stone in position for delivery, set user inputs including Stone speed, direction, and spin to default settings, and create zoomed in view of user settings if Stone is not in play
             if (!Stone_inPlay)
             {
+                s_b[Stone_turn].setPosition(1110,BOARD_HEIGHT/2);
+
                 // Draw array with length and direction as specified by user
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && (arrow.getRotation() > 315 || arrow.getRotation() <= 45))
                 {
@@ -405,23 +400,47 @@ int main()
                     app.draw(counterClockwiseArrow);
                     counterClockwiseArrow.rotate(spinCounter * 5);
                 }
+
+                // Display zoomed in view of user inputs
+                sf::RectangleShape zoomBoundary[4];
+                game.drawUserInputsZoom(boundaryLines,s_b[Stone_turn], zoomStone, arrow, arrowZoom, zoomBoundary);
+
+                // Draw zoomed in view of user inputs
+                app.draw(arrowZoom);
+                for(int i = 0; i < 4; i++)
+                {
+                    app.draw(boundaryLines[i]);
+                    app.draw(zoomBoundary[i]);
+                }
+                app.draw(zoomStone);
+
+                // Create user zoom window label
+                sf::Text inputZoomLabel;
+                inputZoomLabel.setFont(font);
+                inputZoomLabel.setString("Stone Delivery Aid");
+                inputZoomLabel.setCharacterSize(15);
+                inputZoomLabel.setColor(sf::Color::Black);
+                inputZoomLabel.setOrigin(inputZoomLabel.getLocalBounds().width / 2,0);
+                inputZoomLabel.setPosition(1065,BOARD_HEIGHT + 13);
+                app.draw(inputZoomLabel);
             }
 
+            //app.draw(houseBoundary);
             // Draw House
+            app.draw(houseZoomLabel);
             for (int t=0; t<4; t++)
             {
                 app.draw(Targets[t]);
                 app.draw(houseTargets[t]);
-                houseZoom.draw(Targets[t]);
             }
 
             // Draw boundary lines
             for (int l=0; l<8; l++)
             {
                 app.draw(lines[l]);
-                houseZoom.draw(lines[l]);
             }
 
+            // Draw lines in zoom of House
             for(int i = 0; i < 2; i++)
             {
                 app.draw(houseLines[i]);
@@ -438,7 +457,6 @@ int main()
             {
                 app.draw(resting_Spots[s]);
                 app.draw(s_b[s]);
-                houseZoom.draw(s_b[s]);
             }
 
             // Draw play type label
@@ -478,7 +496,6 @@ int main()
                     {
                         // Begin turn by changing status to "in play" and setting the initial speed, direction, and speed to values specified by user
                         s_b[Stone_turn].changeStatus();
-                        s_b[Stone_turn].setPosition(1110,BOARD_HEIGHT/2);
                         s_b[Stone_turn].setInitialSpeed(arrow.getScale().x*45);
                         s_b[Stone_turn].setSpin(spinCounter * MIN_SPIN);
 
@@ -516,7 +533,6 @@ int main()
                         pos_sw_y = s_b[x].getPosition().y;
 
                         app.draw(sweeping);
-                        houseZoom.draw(sweeping);
                         if (t_sweep[0] == sf::seconds(0.0))
                         {
                             t_sweep[0] = myclock.getElapsedTime();
@@ -590,12 +606,18 @@ int main()
                 }
 
                 // Display stone in House zoom if applicable
-                vector<Stone> houseStones;
-                game.updateHouseZoom(s_b,houseStones,NUM_OF_STONES,Targets[0]);
-                for(int i = 0; i < houseStones.size(); i++)
-                    app.draw(houseStones[i]);
+                Stone houseStones[NUM_OF_STONES];
+                for(int i = 0; i < NUM_OF_STONES; i++)
+                    houseStones[i] = s_b[i];
 
-                // Add marker above closest stone if in House
+                game.updateHouseZoom(s_b,houseStones,NUM_OF_STONES,Targets[0]);
+                for(int i = 0; i < NUM_OF_STONES; i++)
+                {
+                    if(game.inHouse(s_b[i],Targets[0]))
+                        app.draw(houseStones[i]);
+                }
+
+                // Add marker above closest stone if in House on both rink and house zoom
                 if(!game.checkPlay_Status(s_b,NUM_OF_STONES))
                 {
                     int closest = game.findClosestStone(s_b,NUM_OF_STONES);
@@ -603,9 +625,11 @@ int main()
                     {
                         sf::CircleShape triangle(5,3);
                         game.markClosestStone(triangle,closest,s_b);
-
                         app.draw(triangle);
-                        houseZoom.draw(triangle);
+
+                        sf::CircleShape triangleHouse(2.5 * 5,3);
+                        game.markClosestStone(triangleHouse,closest,houseStones);
+                        app.draw(triangleHouse);
                     }
 
                     // Add marker to closest stone in House view
@@ -686,7 +710,6 @@ int main()
 
             // Update the window
             app.display();
-            houseZoom.display();
             sf::sleep(t1);
             t2=myclock.getElapsedTime();
             // std::cout << t2.asSeconds() << std::endl;

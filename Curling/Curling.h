@@ -16,20 +16,17 @@ public:
      virtual ~Curling();
 
     void prepareStones(Stone stone_array[]);
+
     void drawRink(sf::CircleShape Targets[], sf::RectangleShape Lines[], sf::CircleShape resting_Spots[], Stone s_b[], int NUM_OF_STONES, sf::Text& gameTypeLabel, sf::Font& font);
     void drawHouseZoom(sf::CircleShape houseTargets[], sf::RectangleShape houseLines[]);
     void drawScoreboard(sf::RectangleShape sb[], sf::Text sb_Text[], sf::Vector2f sb_size, sf::Font font);
-
-    void createHouseView(sf::RenderWindow& houseZoom, const sf::RenderWindow& app);
+    void updateHouseZoom(const Stone stone_array[], Stone houseStones[], int numberOfStones, sf::CircleShape Target);
+    void drawUserInputsZoom(sf::RectangleShape boundaryLines[], const Stone currentStone, Stone& zoomStone, const sf::Sprite arrow, sf::Sprite& arrowZoom, sf::RectangleShape zoomBoundary[]);
 
     float getDistance(sf::Vector2f vector1, sf::Vector2f vector2);
-    int findClosestStone(Stone stone_array[], int NUM_OF_STONES);
-    int findClosestStone(const vector<Stone>& houseStones);
-    int getClostest_movingStone(Stone s[], sf::Vector2i mouse_loc, const int N);
-
     bool inHouse(Stone stone1, sf::CircleShape target);
-
-    void updateHouseZoom(Stone stone_array[], vector<Stone>& houseStones, int numberOfStones, sf::CircleShape Target);
+    int findClosestStone(Stone stone_array[], int NUM_OF_STONES);
+    int getClostest_movingStone(Stone s[], sf::Vector2i mouse_loc, const int N);
 
     void markClosestStone(sf::CircleShape& triangle, int closestStoneIndex, Stone stone_array[]);
     int findPointsScored(int winner, Stone stone_array[], sf::CircleShape Target);

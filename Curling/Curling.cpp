@@ -4,6 +4,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <string>
 
 using namespace std;
 
@@ -19,6 +20,11 @@ Curling::Curling(int newPlayType, int newPointsToWin)
     pointsToWin = newPointsToWin;
     team_A_points = 0;
     team_B_points = 0;
+}
+
+Curling::~Curling()
+{
+    //dtor
 }
 
 void Curling::prepareStones(Stone stone_array[])
@@ -518,4 +524,20 @@ void Curling::updateTeam_A_Points(int points)
 void Curling::updateTeam_B_Points(int points)
 {
     team_B_points += points;
+}
+
+string Curling::Winner()
+{
+    if (getTeam_A_Points() >= getPointsToWin())
+    {
+        return "A";
+    }
+    else if (getTeam_B_Points() >= getPointsToWin())
+    {
+        return "B";
+    }
+    else
+    {
+        return "None";
+    }
 }

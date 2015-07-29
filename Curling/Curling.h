@@ -4,6 +4,8 @@
 #include <vector>
 #include <SFML/Graphics.hpp>
 #include "Stone.h"
+#include <string>
+
 using namespace std;
 
 
@@ -11,6 +13,7 @@ class Curling
 {
 public:
     Curling(int newPlayType, int newPointsToWin);
+     virtual ~Curling();
 
     void prepareStones(Stone stone_array[]);
     void drawRink(sf::CircleShape Targets[], sf::RectangleShape Lines[], sf::CircleShape resting_Spots[], Stone s_b[], int NUM_OF_STONES, sf::Text& gameTypeLabel, sf::Font& font);
@@ -33,6 +36,7 @@ public:
     int getPoints(Stone winning_team[], const float closest_opponent, sf::CircleShape target);
     int calculatePointsEarned(const int winner, Stone team_even[], Stone team_odd[], sf::CircleShape target);
     void updateScoreboard(int winner, int points, sf::Text& team_A_score, sf::Text& team_B_score);
+    string Winner();
 
     bool checkPlay_Status(Stone stone_array[], int numberOfStones);
     bool inValid_Throw(Stone s);

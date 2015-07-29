@@ -24,7 +24,41 @@ Curling menu_launch()
     sf::Time m2;
     sf::Clock menu_clock;
 
-    sf::RenderWindow menu(sf::VideoMode(800, 800), "Menu");
+    sf::RenderWindow menu(sf::VideoMode(800, 500), "Menu");
+
+    sf::Font font;
+    font.loadFromFile("sansation.ttf");
+    //if (!font.loadFromFile("sansation.ttf"))
+    //{
+        //return EXIT_FAILURE; (unclear what i should return here)
+    //}
+    //create main menu text
+    sf::Text menu_list[3];
+    menu_list[0].setString("2 - press for 2 player game");
+    menu_list[1].setString("T - press for Training Mode");
+    menu_list[2].setString("Q - press for Quit");
+
+    for (int t=0; t<3; t++)
+    {
+        //menu_list[t].setOrigin(menu_list[t].getLocalBounds().width/2,menu_list[t].getLocalBounds().height/2);
+        menu_list[t].setPosition(100,100+50*t);
+        menu_list[t].setFont(font);
+        menu_list[t].setCharacterSize(50);
+        menu_list[t].setColor(sf::Color::White);
+    }
+
+    //create input menu text
+    sf::Text input_list[1];
+    input_list[0].setString("Press Enter");
+
+    for (int i=0; i<1; i++)
+    {
+        //input_list[i].setOrigin(input_list[t].getLocalBounds().width/2,input_list[t].getLocalBounds().height/2);
+        input_list[i].setPosition(100,400);
+        input_list[i].setFont(font);
+        input_list[i].setCharacterSize(50);
+        input_list[i].setColor(sf::Color::White);
+    }
 
     while (menu.isOpen())
     {
@@ -41,63 +75,31 @@ Curling menu_launch()
         }
         menu.clear(sf::Color(0,0,255));
 
-        sf::Font font;
-        if (!font.loadFromFile("sansation.ttf"))
-        {
-            //return EXIT_FAILURE; (unclear what i should return here)
-        }
-        //create main menu text
-        sf::Text menu_list[3];
-        menu_list[0].setString("2 - press for 2 player game");
-        menu_list[1].setString("T - press for Training Mode");
-        menu_list[2].setString("Q - press for Quit");
-
-        for (int t=0; t<3; t++)
-        {
-            //menu_list[t].setOrigin(menu_list[t].getLocalBounds().width/2,menu_list[t].getLocalBounds().height/2);
-            menu_list[t].setPosition(100,100+50*t);
-            menu_list[t].setFont(font);
-            menu_list[t].setCharacterSize(50);
-            menu_list[t].setColor(sf::Color::White);
-        }
-
-        //create input menu text
-        sf::Text input_list[1];
-        input_list[0].setString("Press Enter");
-
-        for (int t=0; t<1; t++)
-        {
-            //input_list[t].setOrigin(input_list[t].getLocalBounds().width/2,input_list[t].getLocalBounds().height/2);
-            input_list[t].setPosition(100,700);
-            input_list[t].setFont(font);
-            input_list[t].setCharacterSize(50);
-            input_list[t].setColor(sf::Color::White);
-        }
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
-        {
-            menu_mode = 'I';
-            menu.close();
-            return Curling(1,UI_pt_win);
-        }
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
-        {
-            menu.close();
-            return Curling(0,UI_pt_win);
-        }
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
-        {
-            Program_on = false;
-            menu.close();
-            return Curling(2,UI_pt_win);
-        }
-
         if (menu_mode == 'M')
         {
-            for (int m=0; m<4; m++)
+            for (int m=0; m<3; m++)
             {
                 menu.draw(menu_list[m]);
             }
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
+            {
+                menu_mode = 'I';
+                //menu.close();
+                //return Curling(1,UI_pt_win);
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
+            {
+                menu.close();
+                return Curling(0,UI_pt_win);
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
+            {
+                Program_on = false;
+                menu.close();
+                return Curling(2,UI_pt_win);
+            }
+
         }
         else if (menu_mode == 'I')
         {
@@ -117,22 +119,18 @@ Curling menu_launch()
         sf::sleep(m1);
         m2=menu_clock.getElapsedTime();
     }
+    return Curling(2,UI_pt_win);
 }
 
 
 int main()
 {
-    Curling game = menu_launch();
-
     while (Program_on)
     {
+        Curling game = menu_launch();
         if (game.getPlayType() == 2)
         {
             break;
-        }
-        else
-        {
-            Curling game = menu_launch();
         }
 
         // Create Curling game object based on user inputs
@@ -316,6 +314,12 @@ int main()
             }
         }
         sb_Text[1].setColor(sf::Color::White);
+
+        //Winner Text
+        sf::Text winning_message("Winner",font,50);
+        winning_message.setPosition(BOARD_WIDTH/2,500);
+        winning_message.setColor(sf::Color::Black);
+
 
         sf::Vector2u window_size;
         window_size.x = BOARD_WIDTH;
@@ -645,6 +649,22 @@ int main()
                     game.prepareStones(s_b);
                     Stone_turn = 0;
                     winnerDeclaredCounter = 0;
+                }
+                else if(game.Winner() == "A")
+                {
+                    winning_message.setString("Team A Wins!!!");
+                    app.draw(winning_message);
+                    sf::Time win_pause(sf::seconds(5.0));
+                    sf::sleep(win_pause);
+                    app.close();
+                }
+                else if (game.Winner() == "B")
+                {
+                    winning_message.setString("Team B Wins!!!");
+                    app.draw(winning_message);
+                    sf::Time win_pause(sf::seconds(5.0));
+                    sf::sleep(win_pause);
+                    app.close();
                 }
             }
             // Pause Game

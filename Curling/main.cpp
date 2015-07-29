@@ -19,7 +19,7 @@ const int BOARD_HEIGHT = 165;
 bool Program_on = true;
 
 Curling menu_launch();
-Curling options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[]);
+void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[]);
 float getDistance(sf::Vector2f vector1, sf::Vector2f vector2);
 bool isColorPressed(sf::Vector2f mouseClickPosition, sf::CircleShape colorChoices[], sf::Color& selectedColor);
 
@@ -723,24 +723,37 @@ Curling menu_launch()
 
             while(sf::Mouse::isButtonPressed(sf::Mouse::Left))
             {
-                mouseClickPosition_int = sf::Mouse::getPosition();
+                mouseClickPosition_int = sf::Mouse::getPosition(menu);
                 mouseClickPosition.x = mouseClickPosition_int.x;
                 mouseClickPosition.y = mouseClickPosition_int.y;
-                cout << mouseClickPosition.x << " " << mouseClickPosition.y << endl;
+                /*cout << mouseClickPosition.x << " " << mouseClickPosition.y << endl;
                 cout << colorChoices[7].getPosition().x << " " << colorChoices[7].getPosition().y << endl;
                 cout << getDistance(mouseClickPosition,colorChoices[7].getPosition()) << endl;
-                cout << colorChoices[7].getRadius() << endl;
+                cout << colorChoices[7].getRadius() << endl;*/
                 if(isColorPressed(mouseClickPosition,colorChoices,selectedColor))
                 {
                     userSettingsChanged = true;
                     stoneColorPreviews[mouseClickCounter % 2].setFillColor(selectedColor);
                     mouseClickCounter++;
-                    cout << "Yes!" << endl;
                 }
-                else
-                    cout << "No!" << endl;
                 while(sf::Mouse::isButtonPressed(sf::Mouse::Left));
             }
+            /*sf::CircleShape center;
+            int centerRadius = 20;
+            center.setRadius(centerRadius);
+            center.setOrigin(center.getRadius(),center.getRadius());
+            center.setPosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+            center.setFillColor(sf::Color::Red);
+            menu.draw(center);
+
+            sf::Vector2f mousePos;
+            mousePos.x = sf::Mouse::getPosition(menu).x;
+            mousePos.y = sf::Mouse::getPosition(menu).y;
+
+            if(getDistance(mousePos,center.getPosition()) < center.getRadius())
+                cout << "Yes" << endl;
+            else
+                cout << "No" << endl;*/
 
 
             // Draw stone color previews
@@ -763,7 +776,7 @@ Curling menu_launch()
     return Curling(2,UI_pt_win,sf::Color::Green,sf::Color::Green);
 }
 
-Curling options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[])
+void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[])
 {
     sf::Text optionsLabels[5];
     sf::Vector2f labelPositions[5] = {sf::Vector2f(WINDOW_WIDTH / 2 - 75,5),sf::Vector2f(20,15), sf::Vector2f(20,65), sf::Vector2f(20,240), sf::Vector2f(20,415)};
@@ -797,12 +810,13 @@ Curling options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::
     {
         colorChoices[i].setFillColor(colorOptions[i]);
         colorChoices[i].setRadius(colorRadius);
-        colorChoices[i].setOrigin(25,25);
+        colorChoices[i].setOrigin(colorChoices[i].getRadius(), colorChoices[i].getRadius());
         colorChoices[i].setOutlineColor(sf::Color::Black);
         colorChoices[i].setOutlineThickness(-1);
         colorChoices[i].setPosition(1000 + i % 4 * 2 * (colorChoices[i].getRadius() + 5),300 + i / 4 * 2 * (colorChoices[i].getRadius() + 5));
         //menu.draw(colorChoices[i]);
     }
+
 
     // Create labels above preview of stone with user selected color
     string stonePreviewStrings[2] = {"Team A", "Team B"};

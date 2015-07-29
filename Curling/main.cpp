@@ -11,117 +11,17 @@
 
 using namespace std;
 
+const int WINDOW_WIDTH = 1325;
+const int WINDOW_HEIGHT = 600;
+
 const int BOARD_WIDTH = 1250;
 const int BOARD_HEIGHT = 165;
 bool Program_on = true;
 
-Curling menu_launch()
-{
-    char menu_mode = 'M';
-    int UI_pt_win = 1;
-
-    sf::Time m1=sf::seconds(1.0/60.0);
-    sf::Time m2;
-    sf::Clock menu_clock;
-
-    sf::RenderWindow menu(sf::VideoMode(800, 500), "Menu");
-
-    sf::Font font;
-    font.loadFromFile("sansation.ttf");
-    //if (!font.loadFromFile("sansation.ttf"))
-    //{
-        //return EXIT_FAILURE; (unclear what i should return here)
-    //}
-    //create main menu text
-    sf::Text menu_list[3];
-    menu_list[0].setString("2 - press for 2 player game");
-    menu_list[1].setString("T - press for Training Mode");
-    menu_list[2].setString("Q - press for Quit");
-
-    for (int t=0; t<3; t++)
-    {
-        //menu_list[t].setOrigin(menu_list[t].getLocalBounds().width/2,menu_list[t].getLocalBounds().height/2);
-        menu_list[t].setPosition(100,100+50*t);
-        menu_list[t].setFont(font);
-        menu_list[t].setCharacterSize(50);
-        menu_list[t].setColor(sf::Color::White);
-    }
-
-    //create input menu text
-    sf::Text input_list[1];
-    input_list[0].setString("Press Enter");
-
-    for (int i=0; i<1; i++)
-    {
-        //input_list[i].setOrigin(input_list[t].getLocalBounds().width/2,input_list[t].getLocalBounds().height/2);
-        input_list[i].setPosition(100,400);
-        input_list[i].setFont(font);
-        input_list[i].setCharacterSize(50);
-        input_list[i].setColor(sf::Color::White);
-    }
-
-    while (menu.isOpen())
-    {
-        // Process events
-        sf::Event event;
-        while (menu.pollEvent(event))
-        {
-            // Close window : exit
-            if (event.type == sf::Event::Closed)
-            {
-                Program_on = false;
-                menu.close();
-            }
-        }
-        menu.clear(sf::Color(0,0,255));
-
-        if (menu_mode == 'M')
-        {
-            for (int m=0; m<3; m++)
-            {
-                menu.draw(menu_list[m]);
-            }
-
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
-            {
-                menu_mode = 'I';
-                //menu.close();
-                //return Curling(1,UI_pt_win);
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
-            {
-                menu.close();
-                return Curling(0,UI_pt_win);
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
-            {
-                Program_on = false;
-                menu.close();
-                return Curling(2,UI_pt_win);
-            }
-
-        }
-        else if (menu_mode == 'I')
-        {
-            for (int i=0; i<1; i++)
-            {
-                menu.draw(input_list[i]);
-            }
-
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
-            {
-                menu.close();
-                return Curling(1,UI_pt_win);
-            }
-        }
-
-        menu.display();
-        sf::sleep(m1);
-        m2=menu_clock.getElapsedTime();
-    }
-    return Curling(2,UI_pt_win);
-}
-
+Curling menu_launch();
+Curling options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[]);
+float getDistance(sf::Vector2f vector1, sf::Vector2f vector2);
+bool isColorPressed(sf::Vector2f mouseClickPosition, sf::CircleShape colorChoices[], sf::Color& selectedColor);
 
 int main()
 {
@@ -167,7 +67,7 @@ int main()
 
 
 
-        sf::RenderWindow app(sf::VideoMode(1325, 600), "SFML window");
+        sf::RenderWindow app(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "SFML window");
 
         // Upload font
         sf::Font font;
@@ -719,3 +619,228 @@ int main()
 
     return EXIT_SUCCESS;
 }
+
+Curling menu_launch()
+{
+    char menu_mode = 'M';
+    int UI_pt_win = 1;
+
+    sf::Time m1=sf::seconds(1.0/60.0);
+    sf::Time m2;
+    sf::Clock menu_clock;
+
+    sf::RenderWindow menu(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Menu");
+
+    sf::Font font;
+    font.loadFromFile("sansation.ttf");
+    //if (!font.loadFromFile("sansation.ttf"))
+    //{
+        //return EXIT_FAILURE; (unclear what i should return here)
+    //}
+    //create main menu text
+    sf::Text menu_list[3];
+    menu_list[0].setString("2 - press for 2 player game");
+    menu_list[1].setString("T - press for Training Mode");
+    menu_list[2].setString("Q - press for Quit");
+
+    for (int t=0; t<3; t++)
+    {
+        //menu_list[t].setOrigin(menu_list[t].getLocalBounds().width/2,menu_list[t].getLocalBounds().height/2);
+        menu_list[t].setPosition(100,100+50*t);
+        menu_list[t].setFont(font);
+        menu_list[t].setCharacterSize(50);
+        menu_list[t].setColor(sf::Color::Black);
+    }
+
+    //create input menu text
+    sf::Text input_list[1];
+    input_list[0].setString("Press Enter");
+
+    for (int i=0; i<1; i++)
+    {
+        //input_list[i].setOrigin(input_list[t].getLocalBounds().width/2,input_list[t].getLocalBounds().height/2);
+        input_list[i].setPosition(100,400);
+        input_list[i].setFont(font);
+        input_list[i].setCharacterSize(50);
+        input_list[i].setColor(sf::Color::Black);
+    }
+    bool userSettingsChanged = false;
+    Stone stoneColorPreviews[2];
+    int mouseClickCounter = 0;
+    sf::Vector2i mouseClickPosition_int;
+    sf::Vector2f mouseClickPosition;
+    sf::Color selectedColor;
+    sf::CircleShape colorChoices[8];
+    while (menu.isOpen())
+    {
+        // Process events
+        sf::Event event;
+        while (menu.pollEvent(event))
+        {
+            // Close window : exit
+            if (event.type == sf::Event::Closed)
+            {
+                Program_on = false;
+                menu.close();
+            }
+        }
+        menu.clear(sf::Color(255,255,255));
+
+        if (menu_mode == 'M')
+        {
+            for (int m=0; m<3; m++)
+            {
+                menu.draw(menu_list[m]);
+            }
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
+            {
+                menu_mode = 'I';
+                //menu.close();
+                //return Curling(1,UI_pt_win);
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
+            {
+                menu.close();
+                return Curling(0,UI_pt_win);
+            }
+            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
+            {
+                Program_on = false;
+                menu.close();
+                return Curling(2,UI_pt_win);
+            }
+
+        }
+        else if (menu_mode == 'I')
+        {
+            options_launch(menu,font,1,colorChoices,stoneColorPreviews);
+            if(!userSettingsChanged)
+            {
+                stoneColorPreviews[0].setFillColor(sf::Color::Black);
+                stoneColorPreviews[1].setFillColor(sf::Color(230,230,230));
+            }
+
+            if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
+            {
+                mouseClickPosition_int = sf::Mouse::getPosition();
+                mouseClickPosition.x = mouseClickPosition_int.x;
+                mouseClickPosition.y = mouseClickPosition_int.y;
+                cout << mouseClickPosition.x << " " << mouseClickPosition.y << endl;
+                if(isColorPressed(mouseClickPosition,colorChoices,selectedColor))
+                {
+                    userSettingsChanged = true;
+                    stoneColorPreviews[mouseClickCounter % 2].setFillColor(selectedColor);
+                    mouseClickCounter++;
+                    cout << "Yes!" << endl;
+                }
+                else
+                    cout << "No!" << endl;
+                while(sf::Mouse::isButtonPressed(sf::Mouse::Left));
+            }
+
+
+            // Draw stone color previews
+            for(int i = 0; i < 2; i++)
+                menu.draw(stoneColorPreviews[i]);
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
+            {
+                menu.close();
+                return Curling(1,UI_pt_win);
+            }
+        }
+
+        menu.display();
+        sf::sleep(m1);
+        m2=menu_clock.getElapsedTime();
+    }
+    return Curling(2,UI_pt_win);
+}
+
+Curling options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[])
+{
+    sf::Text optionsLabels[5];
+    sf::Vector2f labelPositions[5] = {sf::Vector2f(WINDOW_WIDTH / 2 - 75,5),sf::Vector2f(20,15), sf::Vector2f(20,65), sf::Vector2f(20,240), sf::Vector2f(20,415)};
+    string labelStrings[5] = {"Game Options", "Enter:", "1) Names", "2) Colors", "3) Scoring Type"};
+    for(int i = 0; i < 5; i++)
+    {
+        optionsLabels[i].setFont(font);
+        optionsLabels[i].setPosition(labelPositions[i]);
+        optionsLabels[i].setString(labelStrings[i]);
+        optionsLabels[i].setColor(sf::Color::Black);
+        optionsLabels[i].setCharacterSize(30);
+        menu.draw(optionsLabels[i]);
+    }
+
+    // Display color choices
+    /*sf::Color colorOptions[125];
+    int index = 0;
+    for(int i = 0; i <= 255; i += 255/5)
+        for(int j = 0; j <= 255; j += 255/5)
+            for(int k = 0; k <= 255; k += 255/5)
+            {
+                colorOptions[index] = sf::Color(i,j,k);
+                index++;
+            }*/
+
+    const int NUMBER_OF_COLORS = 8;
+    sf::Color colorOptions[NUMBER_OF_COLORS] = {sf::Color::Black,sf::Color(230,230,230),sf::Color(230,0,0),sf::Color::Green,sf::Color(0,0,230),sf::Color::Yellow,sf::Color::Magenta,sf::Color::Cyan};
+    //sf::CircleShape colorchoices[NUMBER_OF_COLORS];
+    float colorRadius = 25;
+    for(int i = 0; i < NUMBER_OF_COLORS; i++)
+    {
+        colorChoices[i].setFillColor(colorOptions[i]);
+        colorChoices[i].setRadius(colorRadius);
+        colorChoices[i].setOrigin(colorChoices[i].getRadius(),colorChoices[i].getRadius());
+        colorChoices[i].setOutlineColor(sf::Color::Black);
+        colorChoices[i].setOutlineThickness(-1);
+        colorChoices[i].setPosition(1000 + i % 4 * 2 * (colorChoices[i].getRadius() + 5),300 + i / 4 * 2 * (colorChoices[i].getRadius() + 5));
+        menu.draw(colorChoices[i]);
+    }
+
+    // Create labels above preview of stone with user selected color
+    string stonePreviewStrings[2] = {"Team A", "Team B"};
+    sf::Text stonePreviews[2];
+    for(int i = 0; i < 2; i++)
+    {
+        stonePreviews[i].setString(stonePreviewStrings[i]);
+        stonePreviews[i].setFont(font);
+        stonePreviews[i].setCharacterSize(15);
+        stonePreviews[i].setColor(sf::Color::Black);
+        stonePreviews[i].setOrigin(stonePreviews[i].getLocalBounds().width / 2,0);
+        stonePreviews[i].setPosition(350 + 250 * i,230);
+        menu.draw(stonePreviews[i]);
+    }
+
+    // Set color preview stones with default colors
+    sf::Vector2f stonePositions[2] = {sf::Vector2f(350,310),sf::Vector2f(600,310)};
+    float stonePreviewRadius = 40;
+    for(int i = 0; i < 2; i++)
+    {
+        stoneColorPreviews[i].setRadius(stonePreviewRadius);
+        stoneColorPreviews[i].setOrigin(stoneColorPreviews[i].getRadius(),stoneColorPreviews[i].getRadius());
+        //stoneColorPreviews[i].setFillColor(colorOptions[i]);
+        stoneColorPreviews[i].setPosition(stonePositions[i]);
+        //menu.draw(stoneColorPreviews[i]);
+    }
+}
+
+float getDistance(sf::Vector2f vector1, sf::Vector2f vector2)
+{
+    return sqrt((vector2.x - vector1.x) * (vector2.x - vector1.x) + (vector2.y - vector1.y) * (vector2.y - vector1.y));
+}
+
+bool isColorPressed(sf::Vector2f mouseClickPosition, sf::CircleShape colorChoices[], sf::Color& selectedColor)
+{
+    for(int i = 0; i < 8; i++)
+    {
+        if(getDistance(mouseClickPosition,colorChoices[i].getPosition()) <= colorChoices[i].getRadius())
+        {
+            selectedColor = colorChoices[i].getFillColor();
+            return true;
+        }
+    }
+    return false;
+}
+

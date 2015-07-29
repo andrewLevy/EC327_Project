@@ -14,12 +14,12 @@ using namespace std;
 const int BOARD_WIDTH = 1250;
 const int BOARD_HEIGHT = 165;
 bool Program_on = true;
-bool Menu_open = true;
 
 Curling menu_launch()
 {
     char menu_mode = 'M';
     int UI_pt_win = 1;
+
     sf::Time m1=sf::seconds(1.0/60.0);
     sf::Time m2;
     sf::Clock menu_clock;
@@ -35,6 +35,7 @@ Curling menu_launch()
             // Close window : exit
             if (event.type == sf::Event::Closed)
             {
+                Program_on = false;
                 menu.close();
             }
         }
@@ -45,13 +46,13 @@ Curling menu_launch()
         {
             //return EXIT_FAILURE; (unclear what i should return here)
         }
-        sf::Text menu_list[4];
+        //create main menu text
+        sf::Text menu_list[3];
         menu_list[0].setString("2 - press for 2 player game");
         menu_list[1].setString("T - press for Training Mode");
-        menu_list[2].setString("O - press for Options");
-        menu_list[3].setString("Q - press for Quit");
+        menu_list[2].setString("Q - press for Quit");
 
-        for (int t=0; t<4; t++)
+        for (int t=0; t<3; t++)
         {
             //menu_list[t].setOrigin(menu_list[t].getLocalBounds().width/2,menu_list[t].getLocalBounds().height/2);
             menu_list[t].setPosition(100,100+50*t);
@@ -60,41 +61,56 @@ Curling menu_launch()
             menu_list[t].setColor(sf::Color::White);
         }
 
+        //create input menu text
+        sf::Text input_list[1];
+        input_list[0].setString("Press Enter");
+
+        for (int t=0; t<1; t++)
+        {
+            //input_list[t].setOrigin(input_list[t].getLocalBounds().width/2,input_list[t].getLocalBounds().height/2);
+            input_list[t].setPosition(100,700);
+            input_list[t].setFont(font);
+            input_list[t].setCharacterSize(50);
+            input_list[t].setColor(sf::Color::White);
+        }
+
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
         {
+            menu_mode = 'I';
             menu.close();
-            Menu_open = false;
             return Curling(1,UI_pt_win);
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
         {
             menu.close();
-            Menu_open = false;
             return Curling(0,UI_pt_win);
-        }
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::O))
-        {
-            menu_mode = 'O';
         }
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
         {
             Program_on = false;
-            Menu_open = false;
             menu.close();
-            // i need to return something here i think but not sure what
+            return Curling(2,UI_pt_win);
         }
 
-
-        if (menu_mode = 'M')
+        if (menu_mode == 'M')
         {
             for (int m=0; m<4; m++)
             {
                 menu.draw(menu_list[m]);
             }
         }
-        else if (menu_mode = 'O')
+        else if (menu_mode == 'I')
         {
-            // put options here
+            for (int i=0; i<1; i++)
+            {
+                menu.draw(input_list[i]);
+            }
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
+            {
+                menu.close();
+                return Curling(1,UI_pt_win);
+            }
         }
 
         menu.display();
@@ -110,10 +126,15 @@ int main()
 
     while (Program_on)
     {
-        if (Menu_open)
+        if (game.getPlayType() == 2)
+        {
+            break;
+        }
+        else
         {
             Curling game = menu_launch();
         }
+
         // Create Curling game object based on user inputs
         //Curling game(1,4);
         int NUM_OF_STONES;
@@ -313,7 +334,7 @@ int main()
                 // Close window : exit
                 if (event.type == sf::Event::Closed)
                 {
-                    Menu_open = true;
+                    //Menu_open = true;
                     app.close();
                     houseZoom.close();
                 }
@@ -426,6 +447,7 @@ int main()
             }
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
             {
+                //Menu_open = true;
                 app.close();
             }
 
@@ -505,14 +527,7 @@ int main()
                             t_sweep[0] = t_sweep[1];
                             ms *= -1;
                         }
-                        /*for (int s=0; s<Stone_turn; s++)
-                        {
-                            if (s_b[s].getSpeed() != 0)
-                            {
-                                pos_sw_x = s_b[s].getPosition().x;
-                                pos_sw_y = s_b[s].getPosition().y;
-                            }
-                        }*/
+
                         sweeping.setPosition(pos_sw_x-8.0,pos_sw_y-18.0+5.0*ms);
                     }
                     else
@@ -631,7 +646,7 @@ int main()
                     Stone_turn = 0;
                     winnerDeclaredCounter = 0;
                 }
-
+            }
             // Pause Game
             else if (Play_Mode == 'P')
             {
@@ -648,7 +663,7 @@ int main()
                 }
             }
 
-            }
+
             // Update the window
             app.display();
             houseZoom.display();

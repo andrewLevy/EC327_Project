@@ -730,6 +730,7 @@ Curling menu_launch()
         else if (menu_mode == 'I')
         {
             options_launch(menu,font,1,colorChoices,stoneColorPreviews,textEntryCells,userNames,teamAName,teamBName);
+            bool tabFlag;
 
             sf::FloatRect nameExtryBox1 = textEntryCells[0].getGlobalBounds();
             sf::FloatRect nameEntryBox2 = textEntryCells[1].getGlobalBounds();
@@ -763,6 +764,8 @@ Curling menu_launch()
                     stoneColorPreviews[mouseClickCounter % 2].setFillColor(selectedColor);
                     mouseClickCounter++;
                 }
+
+                tabFlag = false;
             }
 
 
@@ -770,7 +773,7 @@ Curling menu_launch()
             // Update username if user clicks and types in text box
             if(nameExtryBox1.contains(mouseClickPosition) || nameEntryBox2.contains(mouseClickPosition))
             {
-                if(nameExtryBox1.contains(mouseClickPosition))
+                if(nameExtryBox1.contains(mouseClickPosition) && !tabFlag)
                     selectedTextBox = 0;
                 else
                     selectedTextBox = 1;
@@ -781,18 +784,22 @@ Curling menu_launch()
                     {
                         if(event.text.unicode < 128)
                         {
+                            // If user presses tab in Team A textbox, move cursor to Team B textbox
+                            if(event.text.unicode == 9 && selectedTextBox == 0)
+                                tabFlag = true;
+
                             if(selectedTextBox == 0)
                             {
                                 if(event.text.unicode == 8 && teamAName.size() > 0)
                                     teamAName.erase(teamAName.size() - 1,1);
-                                else if(event.text.unicode != 8)
+                                else if(event.text.unicode != 8 && event.text.unicode != 9)
                                     teamAName.push_back(static_cast<char>(event.text.unicode));
                             }
                             else
                             {
                                 if(event.text.unicode == 8 && teamBName.size() > 0)
                                     teamBName.erase(teamBName.size() - 1,1);
-                                else if(event.text.unicode != 8)
+                                else if(event.text.unicode != 8 && event.text.unicode != 9)
                                     teamBName.push_back(static_cast<char>(event.text.unicode));
                             }
                         }

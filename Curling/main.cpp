@@ -172,9 +172,16 @@ int main()
         sb[0].setFillColor(sf::Color::Green);
         sb[1].setFillColor(sf::Color::Black);
         sb[2].setFillColor(sf::Color::Yellow);
-        sb_Text[0].setString(game.getTeamAName());
+        if(!game.getTeamAName().empty())
+            sb_Text[0].setString(game.getTeamAName());
+        else
+            sb_Text[0].setString("Team A");
         sb_Text[1].setString("Set");
-        sb_Text[2].setString(game.getTeamBName());
+
+        if(!game.getTeamBName().empty())
+            sb_Text[2].setString(game.getTeamBName());
+        else
+            sb_Text[2].setString("Team B");
 
         for (int b=0; b<6; b++)
         {

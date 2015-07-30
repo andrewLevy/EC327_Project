@@ -19,7 +19,7 @@ const int BOARD_HEIGHT = 165;
 bool Program_on = true;
 
 Curling menu_launch();
-void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[],sf::RectangleShape textEntryCells[], sf::Text userNames[]);
+void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[],sf::RectangleShape textEntryCells[], sf::Text userNames[], string newTeamAName, string newTeamBName);
 float getDistance(sf::Vector2f vector1, sf::Vector2f vector2);
 bool isColorPressed(sf::Vector2f mouseClickPosition, sf::CircleShape colorChoices[], sf::Color& selectedColor);
 
@@ -52,7 +52,7 @@ int main()
 
 
         // Change below constants to update minimum spin
-        const float DEGREE_PER_TURN = 10;
+        const float DEGREE_PER_TURN = 20;
         const float TIME_PER_TURN = 10;
         const float MIN_SPIN = DEGREE_PER_TURN * (PI / 180) / 8 / 60;
 
@@ -172,9 +172,9 @@ int main()
         sb[0].setFillColor(sf::Color::Green);
         sb[1].setFillColor(sf::Color::Black);
         sb[2].setFillColor(sf::Color::Yellow);
-        sb_Text[0].setString("Score");
+        sb_Text[0].setString(game.getTeamAName());
         sb_Text[1].setString("Set");
-        sb_Text[2].setString("Score");
+        sb_Text[2].setString(game.getTeamBName());
 
         for (int b=0; b<6; b++)
         {
@@ -655,23 +655,19 @@ Curling menu_launch()
     }
 
     //create input menu text
-    sf::Text input_list[1];
-    input_list[0].setString("Press Enter");
 
-    for (int i=0; i<1; i++)
-    {
-        //input_list[i].setOrigin(input_list[t].getLocalBounds().width/2,input_list[t].getLocalBounds().height/2);
-        input_list[i].setPosition(100,400);
-        input_list[i].setFont(font);
-        input_list[i].setCharacterSize(50);
-        input_list[i].setColor(sf::Color::Black);
-    }
     bool userSettingsChanged = false;
 
 
     // Initialize objects required for user name entry
     sf::RectangleShape textEntryCells[2];
     sf::Text userNames[2];
+    int selectedTextBox;
+    //const sf::String name("Andrew");
+    string teamAName("");
+    string teamBName("");
+    //userNames[0].setString("Andrew");
+    //userNames[1].setString("");
 
     // Initialize objects needed to set stone color options
     Stone stoneColorPreviews[2];
@@ -713,20 +709,21 @@ Curling menu_launch()
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
             {
                 menu.close();
-                return Curling(0,UI_pt_win,sf::Color::Green,sf::Color::Green);
+                return Curling(0,UI_pt_win,sf::Color::Green,sf::Color::Green,"Team A", "Team B");
             }
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
             {
                 Program_on = false;
                 menu.close();
-                return Curling(2,UI_pt_win,sf::Color::Green,sf::Color::Green);
+                return Curling(2,UI_pt_win,sf::Color::Green,sf::Color::Green, "Team A", "Team B");
             }
             menu.display();
 
         }
         else if (menu_mode == 'I')
         {
-            options_launch(menu,font,1,colorChoices,stoneColorPreviews,textEntryCells,userNames);
+            options_launch(menu,font,1,colorChoices,stoneColorPreviews,textEntryCells,userNames,teamAName,teamBName);
+
             sf::FloatRect nameExtryBox1 = textEntryCells[0].getGlobalBounds();
             sf::FloatRect nameEntryBox2 = textEntryCells[1].getGlobalBounds();
             if(!userSettingsChanged)
@@ -740,10 +737,9 @@ Curling menu_launch()
                 menu.draw(stoneColorPreviews[i]);
             for(int i = 0; i < 8; i++)
                 menu.draw(colorChoices[i]);
-            for(int i = 0; i < 2; i++)
-                menu.draw(userNames[i]);
             menu.display();
 
+            // If mouse is clicked, store click position and assing new color if color clicked
             if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
             {
                 // Only read in one click
@@ -753,51 +749,6 @@ Curling menu_launch()
                 mouseClickPosition_int = sf::Mouse::getPosition(menu);
                 mouseClickPosition.x = mouseClickPosition_int.x;
                 mouseClickPosition.y = mouseClickPosition_int.y;
-
-                // Determine if user clicked any of the user settings
-                while(nameExtryBox1.contains(mouseClickPosition) || nameEntryBox2.contains(mouseClickPosition))
-                {
-                    //cout << "in first loop" << endl;
-                    int selectedTextBox = nameExtryBox1.contains(mouseClickPosition) ? 0 : 1;
-                    while (menu.pollEvent(event))
-                    {
-                        if(event.type == sf::Event::TextEntered)
-                        {
-                            if(event.text.unicode < 128)
-                            {
-                                cout << static_cast<char>(event.text.unicode) << endl;
-                                //cout << "in second loop" << endl;
-                                //string teamName = userNames[selectedTextBox].getString();
-                                //teamName += static_cast<char>(event.text.unicode);
-                                //const sf::String updatedName("hello");
-                                userNames[selectedTextBox].setString("Hello");
-                                /*for(int i = 0; i < teamAname.size(); i++)
-                                    cout << teamAname[i] << endl;
-                                cout << endl;*/
-                                // Draw user names
-                                for(int i = 0; i < 2; i++)
-                                    menu.draw(userNames[i]);
-
-                                menu.display();
-                            }
-                        }
-                    }
-
-                    if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
-                    {
-                        // Only read in one click
-                        while(sf::Mouse::isButtonPressed(sf::Mouse::Left));
-
-                        // Get mouse click position and convert to floating point form
-                        mouseClickPosition_int = sf::Mouse::getPosition(menu);
-                        mouseClickPosition.x = mouseClickPosition_int.x;
-                        mouseClickPosition.y = mouseClickPosition_int.y;
-                    }
-                }
-                cout << "Outside Loop" << endl;
-                //cout << "Out of Loop" << endl;
-                //string teamA("");
-                //cout << teamA + 'a' << endl;
 
                 if(isColorPressed(mouseClickPosition,colorChoices,selectedColor))
                 {
@@ -809,10 +760,43 @@ Curling menu_launch()
 
 
 
+            // Update username if user clicks and types in text box
+            if(nameExtryBox1.contains(mouseClickPosition) || nameEntryBox2.contains(mouseClickPosition))
+            {
+                if(nameExtryBox1.contains(mouseClickPosition))
+                    selectedTextBox = 0;
+                else
+                    selectedTextBox = 1;
+
+                while (menu.pollEvent(event))
+                {
+                    if(event.type == sf::Event::TextEntered)
+                    {
+                        if(event.text.unicode < 128)
+                        {
+                            if(selectedTextBox == 0)
+                            {
+                                if(event.text.unicode == 8 && teamAName.size() > 0)
+                                    teamAName.erase(teamAName.size() - 1,1);
+                                else if(event.text.unicode != 8)
+                                    teamAName.push_back(static_cast<char>(event.text.unicode));
+                            }
+                            else
+                            {
+                                if(event.text.unicode == 8 && teamBName.size() > 0)
+                                    teamBName.erase(teamBName.size() - 1,1);
+                                else if(event.text.unicode != 8)
+                                    teamBName.push_back(static_cast<char>(event.text.unicode));
+                            }
+                        }
+                    }
+                }
+            }
+
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
             {
                 menu.close();
-                return Curling(1,UI_pt_win,stoneColorPreviews[0].getFillColor(),stoneColorPreviews[1].getFillColor());
+                return Curling(1,UI_pt_win,stoneColorPreviews[0].getFillColor(),stoneColorPreviews[1].getFillColor(),teamAName,teamBName);
             }
         }
 
@@ -820,10 +804,10 @@ Curling menu_launch()
         sf::sleep(m1);
         m2=menu_clock.getElapsedTime();
     }
-    return Curling(2,UI_pt_win,sf::Color::Green,sf::Color::Green);
+    return Curling(2,UI_pt_win,sf::Color::Green,sf::Color::Green,"Team A", "Team B");
 }
 
-void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[],sf::RectangleShape textEntryCells[], sf::Text userNames[])
+void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[],sf::RectangleShape textEntryCells[], sf::Text userNames[], string newTeamAName, string newTeamBName)
 {
     sf::Text optionsLabels[5];
     sf::Vector2f labelPositions[5] = {sf::Vector2f(WINDOW_WIDTH / 2 - 75,5),sf::Vector2f(20,15), sf::Vector2f(20,65), sf::Vector2f(20,240), sf::Vector2f(20,415)};
@@ -852,12 +836,11 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::Cir
         menu.draw(namePreviews[i]);
     }
 
-    // Display cells for name entry
-    //sf::RectangleShape textEntryCells[2];
-    //sf::Text userNames[2];
-    userNames[0].setString("");
-    userNames[1].setString("");
     sf::Vector2f cellSize(150,50);
+
+    userNames[0].setString(newTeamAName);
+    userNames[1].setString(newTeamBName);
+
     for(int i = 0; i < 2; i++)
     {
         textEntryCells[i].setSize(cellSize);
@@ -868,6 +851,7 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::Cir
         textEntryCells[i].setOutlineColor(sf::Color::Black);
         menu.draw(textEntryCells[i]);
 
+        //userNames[i].setString(newName);
         userNames[i].setColor(sf::Color::White);
         userNames[i].setFont(font);
         userNames[i].setCharacterSize(30);

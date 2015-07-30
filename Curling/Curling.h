@@ -12,7 +12,7 @@ using namespace std;
 class Curling
 {
 public:
-    Curling(int newPlayType, int newPointsToWin, sf::Color newTeamAColor, sf::Color newTeamBColor);
+    Curling(int newPlayType, int newPointsToWin, sf::Color newTeamAColor, sf::Color newTeamBColor, string newTeamAName, string newTeamBName);
      virtual ~Curling();
 
     void prepareStones(Stone stone_array[]);
@@ -44,6 +44,8 @@ public:
     int getTeam_B_Points();
     sf::Color getTeam_A_Color();
     sf::Color getTeam_B_Color();
+    string getTeamAName();
+    string getTeamBName();
 
     void updateTeam_A_Points(int points);
     void updateTeam_B_Points(int points);
@@ -55,6 +57,8 @@ private:
     int team_B_points;
     sf::Color team_A_color;
     sf::Color team_B_color;
+    string team_A_name;
+    string team_B_name;
 
 };
 

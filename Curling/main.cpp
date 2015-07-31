@@ -1,3 +1,15 @@
+// Submitted by Avi Klausner and Andrew Levy
+
+// The following program simulates a Curling game.  The program has two modes: (i) a "one-on-one" two player game and (ii) a "training" single user game.
+// The programs uses two custom classes: (a) Stone and (b) Curling
+//      (a) Stone Class
+//       - The Stone class creates "Stones" that extend the "sf::CircleShape" class to include a speed, direction, spin, and friction among other data fields.
+//       - The Stone class incorporates various functions including methods to search for collisions with walls and with other Stones and then react appropriately.
+//      (b) Curling
+//       - The Curling class creates instances of curling games and includes several data fields that ares specific to each curling game
+//         such as game mode, team names, current turn, and team points among others.
+//       - The Curling class includes various functions including drawing the scoreboard and rink and determining the winner of each end and game.
+
 #include <SFML/Graphics.hpp>
 #include <stdlib.h>
 #include <math.h>
@@ -18,6 +30,9 @@ const int BOARD_WIDTH = 1250;
 const int BOARD_HEIGHT = 165;
 bool Program_on = true;
 
+// Below functions launch an introductory animation and enable the user to specify various options for the curling game,
+// including play type (game/training),team names, stone colors, and scoring type (# sets to play or # points to win).
+// The "menu_launch" function returns an instance of the Curling game class that includes the options specified by the user.
 Curling menu_launch();
 void options_launch(sf::RenderWindow& menu, sf::Font font, int numberOfTeams, sf::CircleShape colorChoices[], Stone stoneColorPreviews[],sf::RectangleShape textEntryCells[], sf::Text userNames[], string newTeamAName, string newTeamBName, sf::CircleShape scoreButtons[], int pointsSelect,sf::RectangleShape scoreCells[], char& scoreType);
 float getDistance(sf::Vector2f vector1, sf::Vector2f vector2);
@@ -25,9 +40,14 @@ bool isColorPressed(sf::Vector2f mouseClickPosition, sf::CircleShape colorChoice
 
 int main()
 {
+    // The "Program_on" boolean determines whether the program should continue to run
+    // If "Program_on" is true the menu window will continue to run regardless of whether a Curling game is ongoing.
     while (Program_on)
     {
         Curling game = menu_launch();
+
+        // If the Curling instance return by the "menu_launch" function has a play type other than "0" (training mode)
+        // or "1" (play mode), the Program_on boolean will become false and the program will end
         if (game.getPlayType() == 2)
         {
             continue;
@@ -37,18 +57,19 @@ int main()
             break;
         }
 
-        // Create Curling game object based on user inputs
-        //Curling game(1,4);
+        // The number of stones to be included in each Curling game depends on the play type of each Curling instance.
+        // Play mode involves two teams so requires 16 stones.  Training mode involves a single user so only requires 8 stones.
         int NUM_OF_STONES;
         if(game.getPlayType() == 0)
             NUM_OF_STONES = 8;
         else
             NUM_OF_STONES = 16;
+
+        // Create an array of either 8 or 16 depending on play type (training vs play)
         Stone s_b[NUM_OF_STONES];
 
-        // Initialize stone position and coloring
+        // "prepareStones" initializes stone position and coloring (based on user selection)
         game.prepareStones(s_b);
-        cout << game.getNumberToWin() << endl;
 
         sf::Time t1=sf::seconds(1.0/60.0);
         sf::Time t2;
@@ -57,40 +78,46 @@ int main()
         sf::Clock myclock;
 
 
-        // Change below constants to update minimum spin
+        // Below constants define the change in spin for every press of spin GUI
         const float DEGREE_PER_TURN = 20;
         const float TIME_PER_TURN = 10;
-        const float MIN_SPIN = DEGREE_PER_TURN * (PI / 180) / 8 / 60;
+        const float FRAMES_PER_SECOND = 60;
+        const float MIN_SPIN = DEGREE_PER_TURN * (PI / 180) / TIME_PER_TURN / FRAMES_PER_SECOND;
 
         bool Stone_inPlay = false;
-        //int Stone_turn = 0;
+
 
         char Play_Mode = 'B';
         char last_Mode = 'B';
         bool Changed_Mode = false;
+
+        // "lastThrow" boolean describes whether a throw was legible or not
         bool lastThrow = true;
+
+
         int setNum = 0;
         int clockCounter = 0;
 
-
-
+        // Each Curling game instance will be displayed on the "app" window.
         sf::RenderWindow app(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "SFML window");
 
-        // Upload font
+
         sf::Font font;
         if (!font.loadFromFile("sansation.ttf"))
         {
             return EXIT_FAILURE;
         }
 
-        // Create House, boundary lines, initial placement circles, and label identifying play type (practice or one-on-one)
+        // Use the "drawRink" function within the Curling glass to create the House, boundary lines, initial placement circles,
+        // and label identifying play type (practice or one-on-one)
         sf::CircleShape Targets[4];
         sf::RectangleShape lines[8];
         sf::CircleShape resting_Spots[NUM_OF_STONES];
         sf::Text gameTypeLabel;
         game.drawRink(Targets,lines, resting_Spots,s_b,NUM_OF_STONES,gameTypeLabel,font);
 
-        // Draw zoom of House
+        // Use "drawHouseZoom" function from Curling class to draw zoomed in view of House.
+        //  The zoom of the House helps users form better strategies by providing a larger view of the stones currently residing in the House.
         sf::CircleShape houseTargets[4];
         sf::RectangleShape houseLines[2];
         game.drawHouseZoom(houseTargets,houseLines);
@@ -109,7 +136,7 @@ int main()
         message.setPosition(1000,145);
         message.setColor(sf::Color::Red);
 
-        //Sweeping Picture
+        // Create sweeping image to be used when user sweeps stone
         sf::Texture sweeping_pic;
         if (!sweeping_pic.loadFromFile("sweeping.png"))
         {
@@ -126,7 +153,8 @@ int main()
         float pos_sw_y = 0.0;
 
 
-        //Launch arrow for both board and zoomed in view of user inputs
+        // Create arrow that serves as device for user to set initial speed and direction.
+        // The arrow will be drawn on both game board and a separate zoomed in view of user's initial inputs below the game board.
         sf::Texture arrow_pic;
         if (!arrow_pic.loadFromFile("arrow.png"))
         {
@@ -143,7 +171,7 @@ int main()
         arrow.setPosition(1110,BOARD_HEIGHT/2);
 
 
-        // Launch rotation icons
+        // Create spin icons that display the magnitude and direction of spin chosen by user.
         sf::Texture clockwiseTexture;
         if (!clockwiseTexture.loadFromFile("clockwise_v2.png"))
         {
@@ -168,13 +196,12 @@ int main()
         counterClockwiseArrow.setOrigin(counterClockwise_w / 2,counterClockwise_h / 2);
         counterClockwiseArrow.setPosition(1393 - counterClockwise_w / 2,BOARD_HEIGHT / 2);
 
+        // The magnitude and direction of spin will be determined by a combination of the "spinCounter" and the "MIN_SPIN" constant described above.
         int spinCounter = 0;
 
-        //Create the Score Board
+        // Create the Scoreboard that includes textboxes that display team names, current number of points, and current set.
         sf::RectangleShape sb[6];
         sf::Text sb_Text[6];
-        //sf::Vector2f sb_size[6]={sf::Vector2f(150,50),sf::Vector2f(100,50),sf::Vector2f(150,50),sf::Vector2f(150,50),sf::Vector2f(100,50),sf::Vector2f(150,50)};
-        //game.drawScoreboard(sb,sb_Text,sb_size,font);
 
         sb[0].setFillColor(game.getTeam_A_Color());
         sb[1].setFillColor(sf::Color::Black);
@@ -201,7 +228,7 @@ int main()
 
 
 
-        //Find larger string and set size of scoreboard boxes to that size
+        // Determine longer team name and set size of scoreboard boxes to that size
         sf::Vector2f boxSize;
         if(sb_Text[0].getLocalBounds().width >= sb_Text[2].getLocalBounds().width)
             boxSize = sf::Vector2f(sb_Text[0].getLocalBounds().width + 15,50);
@@ -215,7 +242,7 @@ int main()
         sb[1].setSize(sf::Vector2f(100,50));
         sb[4].setSize(sf::Vector2f(100,50));
 
-
+        // Set properties of boxes
         for (int b=0; b<6; b++)
         {
             sb[b].setOrigin(sb[b].getLocalBounds().width / 2,sb[b].getLocalBounds().height / 2);
@@ -245,7 +272,7 @@ int main()
         winning_message.setPosition(BOARD_WIDTH / 2 - 25,450);
         winning_message.setColor(sf::Color::Black);
 
-        // Create Playing Hints Box and hints GUI
+        // Create textbox and associated GUI link that provide instructions on how to adjust initial speed, direction, and spin as well as how to sweep
         bool hintsOn = false;
 
         sf::RectangleShape hintsBox;
@@ -254,10 +281,8 @@ int main()
         sf::Text hintsGUIText;
 
         // Set settings for hints text box
-        //sf::Vector2f hintsTextSize(sb[0].getLocalBounds().width + sb[1].getLocalBounds().width + sb[2].getLocalBounds().width, 245);
         sf::Vector2f hintsBoxLeftCorner (sb[0].getPosition().x - sb[0].getLocalBounds().width / 2, 290);
         hintsBox.setSize(sf::Vector2f(340,245));
-        //hintsBox.setOrigin(hintsBox.getLocalBounds().width / 2, hintsBox.getLocalBounds().height / 2);
         hintsBox.setPosition(hintsBoxLeftCorner);
         hintsBox.setOutlineColor(sf::Color::Black);
         hintsBox.setOutlineThickness(-1);
@@ -267,8 +292,6 @@ int main()
         hintsText.setFont(font);
         hintsText.setCharacterSize(18);
         hintsText.setColor(sf::Color::Black);
-        //hintsText.setOrigin(hintsText.getLocalBounds().width / 2,hintsText.getLocalBounds().height / 2);
-        //hintsText.setPosition(hintsBox.getPosition().x - hintsBox.getLocalBounds().width / 2 + hintsText.getLocalBounds().width / 2 + 10,hintsBox.getPosition().y);
         hintsText.setPosition(hintsBox.getPosition().x + 10,hintsBox.getPosition().y + 10);
 
         // Set settings for hints GUI box
@@ -287,7 +310,7 @@ int main()
         window_size.x = BOARD_WIDTH;
         window_size.y = BOARD_HEIGHT;
 
-        // Initialize Scoreboard Data
+
         int winnerDeclaredCounter = 0;
 
         // Start the game loop
@@ -314,16 +337,22 @@ int main()
 
             Stone_inPlay = game.checkPlay_Status(s_b, NUM_OF_STONES);
             sf::RectangleShape boundaryLines[4];
+
+            // Initialize the stone to appear in the zoom of initial user input to be the current stone
             Stone zoomStone;
             if(game.getTurnNumber() < NUM_OF_STONES)
                 zoomStone = s_b[game.getTurnNumber()];
 
-            // Place next stone in position for delivery, set user inputs including Stone speed, direction, and spin to default settings, and create zoomed in view of user settings if Stone is not in play
+            // Place next stone in position for delivery, set user inputs including Stone speed, direction, and spin to default settings,
+            // and create zoomed in view of user settings if Stone is not in play
             if (!Stone_inPlay)
             {
+                // Move current stone to delivery position
                 s_b[game.getTurnNumber()].setPosition(1110,BOARD_HEIGHT/2);
 
                 // Draw array with length and direction as specified by user
+
+                // If up/ down arrows are pressed the intial direction arrow moves up/down
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && (arrow.getRotation() > 315 || arrow.getRotation() <= 45))
                 {
                     arrow.rotate(-.25);
@@ -332,6 +361,8 @@ int main()
                 {
                     arrow.rotate(.25);
                 }
+
+                // If the left/right arrows are pressed, the scale of the arrow increases/decreases
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && arrow.getScale().x < .2)
                 {
                     arrow.scale(1.01,1.0);
@@ -343,6 +374,8 @@ int main()
                 app.draw(arrow);
 
                 // Draw and rotate rotation icon per magnitude of spin chosen by user
+                // User sets magnitude and direction of spin by number of times "F" or "J" keys are pressed
+                // "F" key produces a downward curvature and "J" produces and upward curvature
                 if(sf::Keyboard::isKeyPressed(sf::Keyboard::J))
                 {
                     while(sf::Keyboard::isKeyPressed(sf::Keyboard::J));
@@ -381,7 +414,6 @@ int main()
                 {
                     game.drawUserInputsZoom(boundaryLines,s_b[game.getTurnNumber()], zoomStone, arrow, arrowZoom, zoomBoundary);
 
-                    // Draw zoomed in view of user inputs
                     app.draw(arrowZoom);
                     for(int i = 0; i < 4; i++)
                     {
@@ -410,7 +442,7 @@ int main()
                 app.draw(houseTargets[t]);
             }
 
-            // Draw boundary lines
+            // Draw boundary lines on game board
             for (int l=0; l<8; l++)
             {
                 app.draw(lines[l]);
@@ -439,7 +471,7 @@ int main()
                 app.draw(s_b[s]);
             }
 
-            // Draw hints box or hints GUI link depending on position of mouse click
+            // Draw hints textbox or hints GUI link depending on position of mouse click
             if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && !game.checkPlay_Status(s_b, NUM_OF_STONES))
             {
                 // Only read in one click
@@ -455,12 +487,14 @@ int main()
                 sf::FloatRect hintsGUIBoundaries = hintsGUIBox.getGlobalBounds();
                 sf::FloatRect hintsBoundaries = hintsBox.getGlobalBounds();
 
+                // Update boolean value that decides whether or not hints textbox is displayed if user clicks on GUI link
                 if(!hintsOn && hintsGUIBoundaries.contains(mouseClickPosition))
                     hintsOn = true;
                 else if (hintsOn && !hintsBoundaries.contains(mouseClickPosition))
                     hintsOn = false;
             }
 
+            // Draw either GUI link or hints textbox
             if(!hintsOn)
             {
                 app.draw(hintsGUIBox);
@@ -472,14 +506,14 @@ int main()
                 app.draw(hintsText);
             }
 
-            // game mode detection
+            // Game mode detection
+            // If user presses "P", game pauses
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))
             {
                 Play_Mode = 'P';
             }
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
             {
-                //Menu_open = true;
                 app.close();
             }
 
@@ -491,6 +525,8 @@ int main()
                 {
                     app.draw(message);
                 }
+
+                // Check for invalid throws
                 if (!game.checkPlay_Status(s_b,NUM_OF_STONES))
                 {
                     if (game.inValid_Throw(s_b[game.getTurnNumber() - 1]))
@@ -499,6 +535,8 @@ int main()
                         s_b[game.getTurnNumber() - 1].setPosition(-5,-5);
                     }
                 }
+
+                // If user presses answer, set speed, direction, and spin fields of current stone
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && !game.checkPlay_Status(s_b,NUM_OF_STONES))
                 {
                     lastThrow = true;
@@ -534,7 +572,7 @@ int main()
                 Changed_Mode =false;
                 for (int b=0; b<NUM_OF_STONES; b++)
                 {
-                    // Setting Friction
+                    // Set friction depending on whether user chooses to sweep stone by clicking
                     if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && game.checkPlay_Status(s_b,NUM_OF_STONES))
                     {
                         int x = game.getClostest_movingStone(s_b,sf::Mouse::getPosition(app),NUM_OF_STONES);
@@ -575,13 +613,10 @@ int main()
                     s_b[b].makeMove();
                 }
 
-                // Check for stone collisions
+                // Check for stone collisions among stones
                 int collisionStones[2];
                 while(Stone::isCollision(s_b,NUM_OF_STONES,collisionStones, window_size))
                 {
-                    //cout << "Collison!" << endl;
-                    //cout << collisionStones[0] << " " << collisionStones[1] << endl;
-
                     // Find and set new velocities post collision for stones that collided
                     sf::Vector2f newStone1Velocity = s_b[collisionStones[0]].findVelocityPostCollision(s_b[collisionStones[1]]);
                     sf::Vector2f newStone2Velocity = s_b[collisionStones[1]].findVelocityPostCollision(s_b[collisionStones[0]]);
@@ -590,7 +625,7 @@ int main()
                     s_b[collisionStones[0]].updatePostCollision(newStone1Velocity);
                     s_b[collisionStones[1]].updatePostCollision(newStone2Velocity);
 
-                    // Move stones with new post_collision velocities while collision continues
+                    // Move stones with new post_collision velocities while same collision continues
                     while(Stone::isCollision(s_b[collisionStones[0]],s_b[collisionStones[1]]))
                     {
                         s_b[collisionStones[0]].makeMove();
@@ -598,7 +633,7 @@ int main()
                     }
                 }
 
-                // Check for Wall Collisions
+                // Check for wall collisions
                 int stoneNumber;
                 while(Stone::isWallCollision(s_b,NUM_OF_STONES,stoneNumber, window_size))
                 {
@@ -637,14 +672,16 @@ int main()
                     }
                 }
 
-                // Determine winner of end and number of points earned if finished end
+                // Determine winner of end and number of points earned if end is complete
                 if(!game.checkPlay_Status(s_b,NUM_OF_STONES) && game.getTurnNumber() == NUM_OF_STONES && !game.isGameOver() && winnerDeclaredCounter == 0)
                 {
+                    // Increment current set number in both play and training modes
                     game.setCurrentSet(game.getCurrentSet() + 1);
+
                     if(game.getPlayType() == 1)
                     {
                         winnerDeclaredCounter++;
-                        // Determine winner
+                        // Determine winner of end
                         int winner = game.findClosestStone(s_b,NUM_OF_STONES);
 
                         // Determine number of points won if not a tie game
@@ -652,16 +689,17 @@ int main()
                         if(winner != -1 && game.inHouse(s_b[winner], Targets[0]))
                             points = game.findPointsScored(winner,s_b,Targets[0]);
 
+                        // Update scoreboard to reflect updated point totals and net set number
                         game.updateScoreboard(winner,points,sb_Text[3],sb_Text[5],sb_Text[4]);
                     }
+                    // Update current set number in training mode if 8 stones have been played
                     else
                         sb_Text[4].setString(to_string(game.getCurrentSet()));
                 }
 
-                // Begin new end if neither player has reached required number of points
+                // Begin new end if game is not over
                 if(game.getTurnNumber() == NUM_OF_STONES && !game.checkPlay_Status(s_b,NUM_OF_STONES) && !game.isGameOver())
                 {
-                    //Stone::resetNumberofStones();
                     Stone newStoneSet[NUM_OF_STONES];
                     for(int i = 0; i < NUM_OF_STONES; i++)
                         s_b[i] = newStoneSet[i];
@@ -669,6 +707,8 @@ int main()
                     game.setTurnNumber(0);
                     winnerDeclaredCounter = 0;
                 }
+
+                // If game is over, declare winner and then return to menu after pause
                 if(game.isGameOver())
                 {
                     if(game.getTeam_A_Points() > game.getTeam_B_Points())

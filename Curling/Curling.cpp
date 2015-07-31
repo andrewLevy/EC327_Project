@@ -200,6 +200,37 @@ void Curling::drawUserInputsZoom(sf::RectangleShape boundaryLines[], const Stone
 
 }
 
+void Curling::createHintsBox(sf::RectangleShape& hintsBox,sf::Text& hintsText,sf::RectangleShape& hintsGUIBox,sf::Text& hintsGUIText,sf::Font font, sf::Vector2f boxSize)
+{
+    // Set settings for hints textbox
+    //sf::Vector2f hintsTextSize(sb[0].getLocalBounds().width + sb[1].getLocalBounds().width + sb[2].getLocalBounds().width, 245);
+    hintsBox.setSize(boxSize);
+    hintsBox.setOrigin(hintsBox.getLocalBounds().width / 2, hintsBox.getLocalBounds().height / 2);
+    hintsBox.setPosition(BOARD_WIDTH / 2, 420);
+    hintsBox.setOutlineColor(sf::Color::Black);
+    hintsBox.setOutlineThickness(-1);
+
+    //string hints("Tips: \n\n - Adjust speed with left/right arrows \n\n - Adjust direction with up/down arrows\n\n - Adjust curvature down/up with \n'F'/'G' keys \n\n - Sweep individual stone by clicking \nstone on top board");
+    //hintsText.setString(hints);
+    hintsText.setFont(font);
+    hintsText.setCharacterSize(18);
+    hintsText.setColor(sf::Color::Black);
+    hintsText.setOrigin(hintsText.getLocalBounds().width / 2,hintsText.getLocalBounds().height / 2);
+    hintsText.setPosition(hintsBox.getPosition().x - hintsBox.getLocalBounds().width / 2 + hintsText.getLocalBounds().width / 2 + 10,hintsBox.getPosition().y);
+
+    // Set settings for hints GUI link
+    hintsGUIBox.setSize(sf::Vector2f(75,35));
+    hintsGUIBox.setPosition(hintsBox.getPosition().x - hintsBox.getLocalBounds().width / 2, hintsBox.getPosition().y - hintsBox.getLocalBounds().height / 2);
+    hintsGUIBox.setOutlineColor(sf::Color::Black);
+    hintsGUIBox.setOutlineThickness(-1);
+
+    //hintsGUIText.setString("  + Tips");
+    hintsGUIText.setFont(font);
+    hintsGUIText.setCharacterSize(20);
+    hintsGUIText.setColor(sf::Color::Black);
+    hintsGUIText.setPosition(hintsGUIBox.getPosition().x, hintsGUIBox.getPosition().y + 4);
+}
+
 void Curling::drawScoreboard(sf::RectangleShape sb[], sf::Text sb_Text[], sf::Vector2f sb_size, sf::Font font)
 {
     sb[0].setFillColor(sf::Color::Green);

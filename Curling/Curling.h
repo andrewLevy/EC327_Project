@@ -22,6 +22,7 @@ public:
     void drawScoreboard(sf::RectangleShape sb[], sf::Text sb_Text[], sf::Vector2f sb_size, sf::Font font);
     void updateHouseZoom(const Stone stone_array[], Stone houseStones[], int numberOfStones, sf::CircleShape Target);
     void drawUserInputsZoom(sf::RectangleShape boundaryLines[], const Stone currentStone, Stone& zoomStone, const sf::Sprite arrow, sf::Sprite& arrowZoom, sf::RectangleShape zoomBoundary[]);
+    void createHintsBox(sf::RectangleShape& hintsBox,sf::Text& hintsText,sf::RectangleShape& hintsGUIBox,sf::Text& hintsGUIText,sf::Font font,sf::Vector2f boxSize);
 
     float getDistance(sf::Vector2f vector1, sf::Vector2f vector2);
     bool inHouse(Stone stone1, sf::CircleShape target);

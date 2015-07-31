@@ -228,12 +228,47 @@ int main()
         sb_Text[1].setColor(sf::Color::White);
         sb_Text[4].setString(to_string(game.getCurrentSet()));
 
-        //Winner Text
+        // Create Winning Message
         sf::Text winning_message("Winner",font,50);
         winning_message.setOrigin(winning_message.getLocalBounds().width / 2, winning_message.getLocalBounds().height / 2);
         winning_message.setPosition(BOARD_WIDTH / 2 - 25,450);
         winning_message.setColor(sf::Color::Black);
 
+        // Create Playing Hints Box and hints GUI
+        bool hintsOn = false;
+
+        sf::RectangleShape hintsBox;
+        sf::Text hintsText;
+        sf::RectangleShape hintsGUIBox;
+        sf::Text hintsGUIText;
+
+        // Set settings for hints text box
+        sf::Vector2f hintsTextSize(sb[0].getLocalBounds().width + sb[1].getLocalBounds().width + sb[2].getLocalBounds().width, 245);
+        hintsBox.setSize(hintsTextSize);
+        hintsBox.setOrigin(hintsBox.getLocalBounds().width / 2, hintsBox.getLocalBounds().height / 2);
+        hintsBox.setPosition(BOARD_WIDTH / 2, 420);
+        hintsBox.setOutlineColor(sf::Color::Black);
+        hintsBox.setOutlineThickness(-1);
+
+        string hints("Tips: \n\n - Adjust speed with left/right arrows \n\n - Adjust direction with up/down arrows\n\n - Adjust curvature down/up with \n'F'/'G' keys \n\n - Sweep individual stone by clicking \nstone on top board");
+        hintsText.setString(hints);
+        hintsText.setFont(font);
+        hintsText.setCharacterSize(18);
+        hintsText.setColor(sf::Color::Black);
+        hintsText.setOrigin(hintsText.getLocalBounds().width / 2,hintsText.getLocalBounds().height / 2);
+        hintsText.setPosition(hintsBox.getPosition().x - hintsBox.getLocalBounds().width / 2 + hintsText.getLocalBounds().width / 2 + 10,hintsBox.getPosition().y);
+
+        // Set settings for hints GUI box
+        hintsGUIBox.setSize(sf::Vector2f(75,35));
+        hintsGUIBox.setPosition(hintsBox.getPosition().x - hintsBox.getLocalBounds().width / 2, hintsBox.getPosition().y - hintsBox.getLocalBounds().height / 2);
+        hintsGUIBox.setOutlineColor(sf::Color::Black);
+        hintsGUIBox.setOutlineThickness(-1);
+
+        hintsGUIText.setString("  + Tips");
+        hintsGUIText.setFont(font);
+        hintsGUIText.setCharacterSize(20);
+        hintsGUIText.setColor(sf::Color::Black);
+        hintsGUIText.setPosition(hintsGUIBox.getPosition().x, hintsGUIBox.getPosition().y + 4);
 
         sf::Vector2u window_size;
         window_size.x = BOARD_WIDTH;
@@ -380,6 +415,10 @@ int main()
                 app.draw(sb[b]);
                 app.draw(sb_Text[b]);
             }
+
+            // Draw play type label
+            app.draw(gameTypeLabel);
+
             // Draw stone array
             for (int s=0; s<NUM_OF_STONES; s++)
             {
@@ -387,8 +426,38 @@ int main()
                 app.draw(s_b[s]);
             }
 
-            // Draw play type label
-            app.draw(gameTypeLabel);
+            // Draw hints box or hints GUI link depending on position of mouse click
+            if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
+            {
+                // Only read in one click
+                while(sf::Mouse::isButtonPressed(sf::Mouse::Left));
+
+                // Get mouse click position
+                sf::Vector2i mouseClickPosition_int = sf::Mouse::getPosition(app);
+                sf::Vector2f mouseClickPosition;
+                mouseClickPosition.x = mouseClickPosition_int.x;
+                mouseClickPosition.y = mouseClickPosition_int.y;
+
+                // Make floating point rectangles for hints textbox and hints GUI textbox
+                sf::FloatRect hintsGUIBoundaries = hintsGUIBox.getGlobalBounds();
+                sf::FloatRect hintsBoundaries = hintsBox.getGlobalBounds();
+
+                if(!hintsOn && hintsGUIBoundaries.contains(mouseClickPosition))
+                    hintsOn = true;
+                else if (hintsOn && !hintsBoundaries.contains(mouseClickPosition))
+                    hintsOn = false;
+            }
+
+            if(!hintsOn)
+            {
+                app.draw(hintsGUIBox);
+                app.draw(hintsGUIText);
+            }
+            else
+            {
+                app.draw(hintsBox);
+                app.draw(hintsText);
+            }
 
             // game mode detection
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::P))

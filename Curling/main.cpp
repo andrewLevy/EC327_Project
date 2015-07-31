@@ -19,7 +19,7 @@ const int BOARD_HEIGHT = 165;
 bool Program_on = true;
 
 Curling menu_launch();
-void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[],sf::RectangleShape textEntryCells[], sf::Text userNames[], string newTeamAName, string newTeamBName);
+void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[],sf::RectangleShape textEntryCells[], sf::Text userNames[], string newTeamAName, string newTeamBName, sf::CircleShape scoreButtons[], int pointsSelect,sf::RectangleShape scoreCells[], char& scoreType);
 float getDistance(sf::Vector2f vector1, sf::Vector2f vector2);
 bool isColorPressed(sf::Vector2f mouseClickPosition, sf::CircleShape colorChoices[], sf::Color& selectedColor);
 
@@ -172,16 +172,9 @@ int main()
         sb[0].setFillColor(sf::Color::Green);
         sb[1].setFillColor(sf::Color::Black);
         sb[2].setFillColor(sf::Color::Yellow);
-        if(!game.getTeamAName().empty())
-            sb_Text[0].setString(game.getTeamAName());
-        else
-            sb_Text[0].setString("Team A");
+        sb_Text[0].setString(game.getTeamAName());
         sb_Text[1].setString("Set");
-
-        if(!game.getTeamBName().empty())
-            sb_Text[2].setString(game.getTeamBName());
-        else
-            sb_Text[2].setString("Team B");
+        sb_Text[2].setString(game.getTeamBName());
 
         for (int b=0; b<6; b++)
         {
@@ -662,19 +655,16 @@ Curling menu_launch()
     }
 
     //create input menu text
-
     bool userSettingsChanged = false;
-
 
     // Initialize objects required for user name entry
     sf::RectangleShape textEntryCells[2];
     sf::Text userNames[2];
     int selectedTextBox;
-    //const sf::String name("Andrew");
-    string teamAName("");
-    string teamBName("");
-    //userNames[0].setString("Andrew");
-    //userNames[1].setString("");
+
+    string teamAName("Enter Team A Name");
+    string teamBName("Enter Team B Name");
+    string C_instruct("Select Color for Team A");
 
     // Initialize objects needed to set stone color options
     Stone stoneColorPreviews[2];
@@ -683,7 +673,20 @@ Curling menu_launch()
     sf::Vector2f mouseClickPosition;
     sf::Color selectedColor;
     sf::CircleShape colorChoices[8];
+    sf::RectangleShape scoreCells[2];
+    sf::CircleShape scoreButtons[8];
+    int pointsSelect = 0;
+    char scoreType;
 
+    sf::RectangleShape goPlay;
+    sf::Text goPlay_Text("Click here /n to go play!",font,50);
+    sf::Vector2f goPlay_size(100,100);
+    goPlay.setFillColor(sf::Color::Black);
+    goPlay.setSize(goPlay_size);
+    goPlay.setOrigin(goPlay_size.x ,goPlay_size.y);
+    goPlay.setPosition(WINDOW_WIDTH,WINDOW_HEIGHT);
+    goPlay_Text.setColor(sf::Color::White);
+    goPlay_Text.setPosition(WINDOW_WIDTH-goPlay_size.x,WINDOW_HEIGHT-goPlay_size.y);
 
     while (menu.isOpen())
     {
@@ -702,6 +705,7 @@ Curling menu_launch()
 
         if (menu_mode == 'M')
         {
+            scoreType = 'P';
             for (int m=0; m<3; m++)
             {
                 menu.draw(menu_list[m]);
@@ -716,20 +720,23 @@ Curling menu_launch()
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
             {
                 menu.close();
-                return Curling(0,UI_pt_win,sf::Color::Green,sf::Color::Green,"Team A", "Team B");
+                scoreType = 'T';
+                return Curling(0,UI_pt_win,scoreType,sf::Color::Green,sf::Color::Green,"Team A", "Team B");
             }
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
             {
                 Program_on = false;
                 menu.close();
-                return Curling(2,UI_pt_win,sf::Color::Green,sf::Color::Green, "Team A", "Team B");
+                scoreType = 'Q';
+                return Curling(2,UI_pt_win,scoreType,sf::Color::Green,sf::Color::Green, "Team A", "Team B");
             }
             menu.display();
 
         }
         else if (menu_mode == 'I')
         {
-            options_launch(menu,font,1,colorChoices,stoneColorPreviews,textEntryCells,userNames,teamAName,teamBName);
+            options_launch(menu,font,1,colorChoices,stoneColorPreviews,textEntryCells,userNames,teamAName,teamBName,scoreButtons,pointsSelect,scoreCells,scoreType);
+            UI_pt_win = pointsSelect+1;
             bool tabFlag;
 
             sf::FloatRect nameExtryBox1 = textEntryCells[0].getGlobalBounds();
@@ -740,6 +747,16 @@ Curling menu_launch()
                 stoneColorPreviews[1].setFillColor(sf::Color(230,230,230));
             }
 
+            sf::Text selectColorInstruction;
+            selectColorInstruction.setString(C_instruct);
+            selectColorInstruction.setFont(font);
+            selectColorInstruction.setCharacterSize(15);
+            selectColorInstruction.setColor(sf::Color::Black);
+            selectColorInstruction.setPosition(1000,230);
+            menu.draw(selectColorInstruction);
+
+            menu.draw(goPlay);
+            menu.draw(goPlay_Text);
             // Draw stone color previews
             for(int i = 0; i < 2; i++)
                 menu.draw(stoneColorPreviews[i]);
@@ -762,21 +779,48 @@ Curling menu_launch()
                 {
                     userSettingsChanged = true;
                     stoneColorPreviews[mouseClickCounter % 2].setFillColor(selectedColor);
+                    if ((mouseClickCounter  %2) > 0)
+                        C_instruct = "Select Color for Team A";
+                    else
+                        C_instruct = "Select Color for Team B";
                     mouseClickCounter++;
+                }
+                //check score type button click
+                else if(scoreCells[0].getGlobalBounds().contains(mouseClickPosition))
+                    scoreType = 'E';
+                else if(scoreCells[1].getGlobalBounds().contains(mouseClickPosition))
+                    scoreType = 'P';
+                //Check for value button click
+                for(int i = 0; i < 8; i++)
+                {
+                    if(getDistance(mouseClickPosition,scoreButtons[i].getPosition()) <= scoreButtons[i].getRadius())
+                    {
+                        pointsSelect = i;
+                    }
                 }
 
                 tabFlag = false;
             }
 
-
-
             // Update username if user clicks and types in text box
             if(nameExtryBox1.contains(mouseClickPosition) || nameEntryBox2.contains(mouseClickPosition))
             {
                 if(nameExtryBox1.contains(mouseClickPosition) && !tabFlag)
+                {
                     selectedTextBox = 0;
+                    if (teamAName == "Enter Team A Name")
+                    {
+                        teamAName = "";
+                    }
+                }
                 else
+                {
                     selectedTextBox = 1;
+                    if (teamBName == "Enter Team B Name")
+                    {
+                        teamBName = "";
+                    }
+                }
 
                 while (menu.pollEvent(event))
                 {
@@ -807,10 +851,11 @@ Curling menu_launch()
                 }
             }
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
+            //if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
+            if (goPlay.getGlobalBounds().contains(mouseClickPosition))
             {
                 menu.close();
-                return Curling(1,UI_pt_win,stoneColorPreviews[0].getFillColor(),stoneColorPreviews[1].getFillColor(),teamAName,teamBName);
+                return Curling(1,UI_pt_win,scoreType,stoneColorPreviews[0].getFillColor(),stoneColorPreviews[1].getFillColor(),teamAName,teamBName);
             }
         }
 
@@ -818,10 +863,10 @@ Curling menu_launch()
         sf::sleep(m1);
         m2=menu_clock.getElapsedTime();
     }
-    return Curling(2,UI_pt_win,sf::Color::Green,sf::Color::Green,"Team A", "Team B");
+    return Curling(2,UI_pt_win,'Q',sf::Color::Green,sf::Color::Green,"Team A", "Team B");
 }
 
-void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[],sf::RectangleShape textEntryCells[], sf::Text userNames[], string newTeamAName, string newTeamBName)
+void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[],sf::RectangleShape textEntryCells[], sf::Text userNames[], string newTeamAName, string newTeamBName, sf::CircleShape scoreButtons[], int pointsSelect, sf::RectangleShape scoreCells[], char& scoreType)
 {
     sf::Text optionsLabels[5];
     sf::Vector2f labelPositions[5] = {sf::Vector2f(WINDOW_WIDTH / 2 - 75,5),sf::Vector2f(20,15), sf::Vector2f(20,65), sf::Vector2f(20,240), sf::Vector2f(20,415)};
@@ -850,7 +895,7 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::Cir
         menu.draw(namePreviews[i]);
     }
 
-    sf::Vector2f cellSize(150,50);
+    sf::Vector2f cellSize(200,50);
 
     userNames[0].setString(newTeamAName);
     userNames[1].setString(newTeamBName);
@@ -865,10 +910,9 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::Cir
         textEntryCells[i].setOutlineColor(sf::Color::Black);
         menu.draw(textEntryCells[i]);
 
-        //userNames[i].setString(newName);
         userNames[i].setColor(sf::Color::White);
         userNames[i].setFont(font);
-        userNames[i].setCharacterSize(30);
+        userNames[i].setCharacterSize(20);
         userNames[i].setOrigin(userNames[i].getLocalBounds().width / 2,userNames[i].getLocalBounds().height / 2);
         userNames[i].setPosition(textEntryCells[i].getPosition());
         menu.draw(userNames[i]);
@@ -920,26 +964,68 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::Cir
     }
 
     //Scoring options
-    sf::RectangleShape s_bgr[2];
-    sf::Text scoring_style[2];
-    scoring_style[0].setString("Sets");
-    scoring_style[1].setString("Targets");
-    sf::Vector2f bgr_size(150,50);
+    //sf::RectangleShape scoreCells[2];
+    sf::Text scoreTextLabels[2];
+    scoreTextLabels[0].setString("Ends");
+    scoreTextLabels[1].setString("Points");
+    sf::Vector2f scoreCellSize(100,40);
+    sf::Vector2f scoreCellSize_t(300,40);
     for (int s=0; s<2; s++)
     {
-        s_bgr[s].setSize(bgr_size);
-        s_bgr[s].setOrigin(bgr_size.x/2,bgr_size.y/2);
-        s_bgr[s].setFillColor(sf::Color(160,160,160));
-        s_bgr[s].setPosition(400+(s*150+4),500);
-        s_bgr[s].setOutlineThickness(2);
-        s_bgr[s].setOutlineColor(sf::Color::Black);
-        scoring_style[s].setFont(font);
-        scoring_style[s].setCharacterSize(30);
-        scoring_style[s].setOrigin(scoring_style[s].getLocalBounds().width/2,scoring_style[s].getLocalBounds().height/2);
-        scoring_style[s].setPosition(s_bgr[s].getPosition());
-        menu.draw(s_bgr[s]);
-        menu.draw(scoring_style[s]);
+        scoreCells[s].setSize(scoreCellSize);
+        scoreCells[s].setOrigin(scoreCellSize.x/2,scoreCellSize.y/2);
+        scoreCells[s].setFillColor(sf::Color(160,160,160));
+        scoreCells[s].setPosition(450+(s*100),475);
+        scoreCells[s].setOutlineThickness(-2);
+        if (scoreType == 'P')
+            scoreCells[1].setOutlineThickness(-10);
+        else
+            scoreCells[0].setOutlineThickness(-10);
+        scoreCells[s].setOutlineColor(sf::Color::Black);
+        scoreTextLabels[s].setFont(font);
+        scoreTextLabels[s].setCharacterSize(20);
+        scoreTextLabels[s].setOrigin(scoreTextLabels[s].getLocalBounds().width/2,scoreTextLabels[s].getLocalBounds().height/2);
+        scoreTextLabels[s].setPosition(scoreCells[s].getPosition().x,scoreCells[s].getPosition().y-5);
+        menu.draw(scoreCells[s]);
+        menu.draw(scoreTextLabels[s]);
     }
+    sf::Text scoreButtonValues[8];
+    float buttonRadius = 25.0;
+    //int valueSelect = 0;
+    int valueSelect = pointsSelect;
+    for (int b=0; b<8; b++)
+    {
+        scoreButtons[b].setFillColor(sf::Color(255,255,255));
+        scoreButtons[b].setRadius(buttonRadius);
+        scoreButtons[b].setOrigin(buttonRadius,buttonRadius);
+        scoreButtons[b].setOutlineThickness(-10);
+        scoreButtons[b].setOutlineColor(sf::Color(160,160,160));
+        if (b==valueSelect)
+            scoreButtons[b].setOutlineColor(sf::Color(0,0,0));
+        scoreButtons[b].setPosition(300+b*55,560);
+
+        scoreButtonValues[b].setString(to_string(b+1));
+        scoreButtonValues[b].setCharacterSize(20);
+        scoreButtonValues[b].setFont(font);
+        scoreButtonValues[b].setColor(sf::Color::Black);
+        scoreButtonValues[b].setOrigin(scoreButtonValues[b].getLocalBounds().width/2,scoreButtons[b].getLocalBounds().height/2);
+        scoreButtonValues[b].setPosition(300+b*55,572);
+        menu.draw(scoreButtons[b]);
+        menu.draw(scoreButtonValues[b]);
+    }
+    sf::Text scoringInstruction[2];
+    scoringInstruction[0].setString("Select a game score type");
+    scoringInstruction[1].setString("Select a value to play until");
+    for (int si=0; si<2; si++)
+    {
+        scoringInstruction[si].setColor(sf::Color::Black);
+        scoringInstruction[si].setFont(font);
+        scoringInstruction[si].setCharacterSize(15);
+        scoringInstruction[si].setOrigin(scoringInstruction[si].getLocalBounds().width/2,scoringInstruction[si].getLocalBounds().height/2);
+        scoringInstruction[si].setPosition(500,440+si*80);
+        menu.draw(scoringInstruction[si]);
+    }
+
 }
 
 float getDistance(sf::Vector2f vector1, sf::Vector2f vector2)
@@ -959,4 +1045,5 @@ bool isColorPressed(sf::Vector2f mouseClickPosition, sf::CircleShape colorChoice
     }
     return false;
 }
+
 

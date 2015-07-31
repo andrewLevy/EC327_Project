@@ -14,17 +14,24 @@ const int BOARD_HEIGHT = 165;
 const sf::Vector2f zoomButtonPosition(180,375);
 const float zoomRatio = 2.5;
 
-Curling::Curling(int newPlayType, int newPointsToWin, sf::Color newTeamAColor, sf::Color newTeamBColor, string newTeamAName, string newTeamBName)
+Curling::Curling(int newPlayType, int newPointsToWin, char newPointType, sf::Color newTeamAColor, sf::Color newTeamBColor, string newTeamAName, string newTeamBName)
 {
     // Data field to specity game type includes practice (playType = 0) or One-on-One (playType = 1)
     playType = newPlayType;
     pointsToWin = newPointsToWin;
+    PointType = newPointType;
     team_A_points = 0;
     team_B_points = 0;
     team_A_color = newTeamAColor;
     team_B_color = newTeamBColor;
-    team_A_name = newTeamAName;
-    team_B_name = newTeamBName;
+    if (newTeamAName.empty() || newTeamAName == "Enter Team A Name")
+        team_A_name = "Team A";
+    else
+        team_A_name = newTeamAName;
+    if (newTeamBName.empty() || newTeamBName == "Enter Team B Name")
+        team_B_name = "Team B";
+    else
+        team_B_name = newTeamBName;
 }
 
 Curling::~Curling()
@@ -481,6 +488,11 @@ int Curling::getPlayType()
 int Curling::getPointsToWin()
 {
     return pointsToWin;
+}
+
+char Curling::getPointType()
+{
+    return PointType;
 }
 
 int Curling::getTeam_A_Points()

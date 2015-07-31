@@ -684,7 +684,7 @@ int main()
                         t3=myclock.restart();
                         clockCounter++;
                     }
-                    if(myclock.getElapsedTime().asSeconds() > 5)
+                    if(myclock.getElapsedTime().asSeconds() > 4)
                         app.close();
                 }
             }
@@ -735,19 +735,30 @@ Curling menu_launch()
         //return EXIT_FAILURE; (unclear what i should return here)
     //}
     //create main menu text
+
+    sf::Texture introImage;
+    introImage.loadFromFile("introImage_v2.png");
+    sf::Sprite introImageSprite(introImage);
+    introImageSprite.setScale(1.75,1.75);
+    introImageSprite.setOrigin(introImageSprite.getLocalBounds().width / 2, introImageSprite.getLocalBounds().height / 2);
+    introImageSprite.setPosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 70);
+
     sf::Text menu_list[3];
-    menu_list[0].setString("2 - press for 2 player game");
-    menu_list[1].setString("T - press for Training Mode");
-    menu_list[2].setString("Q - press for Quit");
+    menu_list[0].setString("Play");
+    menu_list[1].setString("Train");
+    menu_list[2].setString("Quit");
 
     for (int t=0; t<3; t++)
     {
-        //menu_list[t].setOrigin(menu_list[t].getLocalBounds().width/2,menu_list[t].getLocalBounds().height/2);
-        menu_list[t].setPosition(100,100+50*t);
         menu_list[t].setFont(font);
-        menu_list[t].setCharacterSize(50);
+        menu_list[t].setCharacterSize(30);
         menu_list[t].setColor(sf::Color::Black);
+        menu_list[t].setOrigin(menu_list[t].getLocalBounds().width / 2, menu_list[t].getLocalBounds().height / 2);
     }
+
+    menu_list[1].setPosition(WINDOW_WIDTH / 2,WINDOW_HEIGHT / 2 + 200);
+    menu_list[0].setPosition(menu_list[1].getPosition().x - menu_list[1].getLocalBounds().width / 2 - menu_list[0].getLocalBounds().width /2 - 100,menu_list[1].getPosition().y);
+    menu_list[2].setPosition(menu_list[1].getPosition().x + menu_list[1].getLocalBounds().width / 2 + menu_list[2].getLocalBounds().width /2 + 100,menu_list[1].getPosition().y);
 
     //create input menu text
     bool userSettingsChanged = false;
@@ -791,6 +802,10 @@ Curling menu_launch()
     sf::Sprite backToMenu(backToMenu_pic);
     backToMenu.setPosition(1100,10);
 
+    sf::Clock introClock;
+    sf::Time introTime;
+    int timeCounter = 0;
+
 
     while (menu.isOpen())
     {
@@ -809,23 +824,69 @@ Curling menu_launch()
 
         if (menu_mode == 'M')
         {
+
+            menu.draw(introImageSprite);
+
             scoreType = 'P';
-            for (int m=0; m<3; m++)
+
+            if(introClock.getElapsedTime().asSeconds() > 0.5)
             {
-                menu.draw(menu_list[m]);
+                if(introClock.getElapsedTime().asSeconds() > 0.5)
+                    menu.draw(menu_list[0]);
+                if(introClock.getElapsedTime().asSeconds() > 1.0)
+                    menu.draw(menu_list[1]);
+                if(introClock.getElapsedTime().asSeconds() > 1.5)
+                    menu.draw(menu_list[2]);
             }
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Num2))
+            // If cursor scrolls over game option type, highlight option
+            sf::Vector2i currentMousePosition_int(sf::Mouse::getPosition(menu));
+            sf::Vector2f currentMousePosition;
+            currentMousePosition.x = currentMousePosition_int.x;
+            currentMousePosition.y = currentMousePosition_int.y;
+
+            sf::FloatRect playBox = menu_list[0].getGlobalBounds();
+            sf::FloatRect trainingBox = menu_list[1].getGlobalBounds();
+            sf::FloatRect quitBox = menu_list[2].getGlobalBounds();
+
+            if(playBox.contains(currentMousePosition))
+                menu_list[0].setColor(sf::Color(255,140,0));
+            else
+                menu_list[0].setColor(sf::Color::Black);
+
+            if(trainingBox.contains(currentMousePosition))
+                menu_list[1].setColor(sf::Color(255,140,0));
+            else
+                menu_list[1].setColor(sf::Color::Black);
+
+            if(quitBox.contains(currentMousePosition))
+                menu_list[2].setColor(sf::Color(255,140,0));
+            else
+                menu_list[2].setColor(sf::Color::Black);
+
+            if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
             {
-                menu_mode = 'I';
-                //menu.close();
-                //return Curling(1,UI_pt_win);
-            }
-            else if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
-            {
-                menu_mode = 'T';
-                //scoreType = 'T';
-                //return Curling(0,UI_pt_win,scoreType,sf::Color::Green,sf::Color::Green,"Team A", "Team B");
+                while(sf::Mouse::isButtonPressed(sf::Mouse::Left));
+
+                // Find where mouse clikced
+                sf::Vector2i currentMouseClickPosition_int(sf::Mouse::getPosition(menu));
+                sf::Vector2f currentMouseClickPosition;
+                currentMouseClickPosition.x = currentMouseClickPosition_int.x;
+                currentMouseClickPosition.y = currentMouseClickPosition_int.y;
+
+                // If "Play", "Train", or "Quit" selected change mode accordingly
+                if(playBox.contains(currentMouseClickPosition))
+                    menu_mode = 'I';
+                else if(trainingBox.contains(currentMouseClickPosition))
+                    menu_mode = 'T';
+                else if(quitBox.contains(currentMouseClickPosition))
+                {
+                    Program_on = false;
+                    menu.close();
+                    scoreType = 'Q';
+                    return Curling(2,UI_pt_win,scoreType,sf::Color::Green,sf::Color::Green, "Team A", "Team B");
+                }
+
             }
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
             {
@@ -1001,8 +1062,14 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int numberOfTeams, sf
         optionsLabels[i].setString(labelStrings[i]);
         optionsLabels[i].setColor(sf::Color::Black);
         optionsLabels[i].setCharacterSize(30);
-        menu.draw(optionsLabels[i]);
     }
+    if(numberOfTeams == 1)
+    {
+        optionsLabels[2].setString("1) Name");
+        optionsLabels[3].setString("2) Stone Color");
+    }
+    for(int i = 0; i < numberOfLabels; i++)
+        menu.draw(optionsLabels[i]);
 
     // Display name preview labels
     string namePreviewStrings[2] = {"Team A", "Team B"};
@@ -1081,9 +1148,7 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int numberOfTeams, sf
         stoneColorPreviews[i].setRadius(stonePreviewRadius);
         stoneColorPreviews[i].setOutlineThickness(40 / (10*(11.4/12)*.5 + 2) * -2.0);
         stoneColorPreviews[i].setOrigin(stoneColorPreviews[i].getRadius(),stoneColorPreviews[i].getRadius());
-        //stoneColorPreviews[i].setFillColor(colorOptions[i]);
         stoneColorPreviews[i].setPosition(stonePositions[i]);
-        //menu.draw(stoneColorPreviews[i]);
     }
 
     //Scoring options
@@ -1101,10 +1166,14 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int numberOfTeams, sf
             scoreCells[s].setFillColor(sf::Color(160,160,160));
             scoreCells[s].setPosition(450+(s*100),475);
             scoreCells[s].setOutlineThickness(-2);
-            if (scoreType == 'P')
+            /*if (scoreType == 'P')
                 scoreCells[1].setOutlineThickness(-10);
             else
-                scoreCells[0].setOutlineThickness(-10);
+                scoreCells[0].setOutlineThickness(-10);*/
+            if (scoreType == 'P')
+                scoreCells[1].setFillColor(sf::Color::Black);
+            else
+                scoreCells[0].setFillColor(sf::Color::Black);
             scoreCells[s].setOutlineColor(sf::Color::Black);
             scoreTextLabels[s].setFont(font);
             scoreTextLabels[s].setCharacterSize(20);

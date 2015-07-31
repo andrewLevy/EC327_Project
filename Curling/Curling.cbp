@@ -48,6 +48,8 @@
 		<Unit filename="clockwise_v2.png" />
 		<Unit filename="counterclockwise.png" />
 		<Unit filename="include/Stone.h" />
+		<Unit filename="introImage.png" />
+		<Unit filename="introImage_v2.png" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/Stone.cpp" />
 		<Extensions>

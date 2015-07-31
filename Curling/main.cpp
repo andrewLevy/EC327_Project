@@ -30,6 +30,10 @@ int main()
         Curling game = menu_launch();
         if (game.getPlayType() == 2)
         {
+            continue;
+        }
+        else if (game.getPlayType() == 3)
+        {
             break;
         }
 
@@ -166,47 +170,44 @@ int main()
         //Create the Score Board
         sf::RectangleShape sb[6];
         sf::Text sb_Text[6];
-        sf::Vector2f sb_size(100,50);
+        sf::Vector2f sb_size[6]={sf::Vector2f(150,50),sf::Vector2f(100,50),sf::Vector2f(150,50),sf::Vector2f(150,50),sf::Vector2f(100,50),sf::Vector2f(150,50)};
         //game.drawScoreboard(sb,sb_Text,sb_size,font);
 
         sb[0].setFillColor(sf::Color::Green);
         sb[1].setFillColor(sf::Color::Black);
         sb[2].setFillColor(sf::Color::Yellow);
         sb_Text[0].setString(game.getTeamAName());
-        sb_Text[1].setString("Set");
+        sb_Text[1].setString("End");
         sb_Text[2].setString(game.getTeamBName());
 
         for (int b=0; b<6; b++)
         {
+            sb[b].setSize(sb_size[b]);
+            sb[b].setOrigin(sb_size[b].x/2,sb_size[b].y/2);
+            sb[b].setOutlineColor(sf::Color::Black);
+            sb[b].setOutlineThickness(-2.0);
+            sb_Text[b].setFont(font);
+            sb_Text[b].setOrigin(sb_Text[b].getLocalBounds().width/2,sb_Text[b].getLocalBounds().height/2);
+            sb_Text[b].setPosition(sb[b].getPosition());
+            sb_Text[b].setColor(sf::Color::Black);
             if (b<3)
             {
-                sb[b].setSize(sb_size);
-                sb[b].setOrigin(sb_size.x/2,sb_size.y/2);
-                sb[b].setOutlineColor(sf::Color::Black);
-                sb[b].setOutlineThickness(-2.0);
-                sb[b].setPosition(BOARD_WIDTH/2+(b-1)*sb_size.x,195);
-                sb_Text[b].setFont(font);
+                sb[b].setPosition(BOARD_WIDTH/2+(b-1)*sb_size[b].x,195);
                 sb_Text[b].setOrigin(sb_Text[b].getLocalBounds().width/2,sb_Text[b].getLocalBounds().height/2);
-                sb_Text[b].setCharacterSize(30);
                 sb_Text[b].setPosition(sb[b].getPosition());
-                sb_Text[b].setColor(sf::Color::Black);
+                sb_Text[b].setCharacterSize(30);
             }
             else
             {
-                sb[b].setSize(sb_size);
-                sb[b].setOrigin(sb_size.x/2,sb_size.y/2);
-                sb[b].setOutlineColor(sf::Color::Black);
-                sb[b].setOutlineThickness(-2.0);
-                sb[b].setPosition(BOARD_WIDTH/2+(b-4)*sb_size.x,245);
-                sb_Text[b].setFont(font);
-                sb_Text[b].setOrigin(sb_Text[b].getLocalBounds().width/2,sb_Text[b].getCharacterSize()/2);
-                sb_Text[b].setCharacterSize(20);
+                sb[b].setPosition(BOARD_WIDTH/2+(b-4)*sb_size[b].x,245);
+                sb_Text[b].setOrigin(sb_Text[b].getLocalBounds().width/2,sb_Text[b].getLocalBounds().height/2);
                 sb_Text[b].setPosition(sb[b].getPosition());
+                sb_Text[b].setCharacterSize(20);
                 sb_Text[b].setString("0");
-                sb_Text[b].setColor(sf::Color::Black);
             }
         }
         sb_Text[1].setColor(sf::Color::White);
+        sb_Text[4].setString("1");
 
         //Winner Text
         sf::Text winning_message("Winner",font,50);
@@ -678,15 +679,24 @@ Curling menu_launch()
     int pointsSelect = 0;
     char scoreType;
 
-    sf::RectangleShape goPlay;
-    sf::Text goPlay_Text("Click here /n to go play!",font,50);
-    sf::Vector2f goPlay_size(100,100);
-    goPlay.setFillColor(sf::Color::Black);
-    goPlay.setSize(goPlay_size);
-    goPlay.setOrigin(goPlay_size.x ,goPlay_size.y);
-    goPlay.setPosition(WINDOW_WIDTH,WINDOW_HEIGHT);
-    goPlay_Text.setColor(sf::Color::White);
-    goPlay_Text.setPosition(WINDOW_WIDTH-goPlay_size.x,WINDOW_HEIGHT-goPlay_size.y);
+    sf::Texture goPlay_pic;
+    goPlay_pic.loadFromFile("Play_now_button.png");
+    //if (!goPlay_pic.loadFromFile("Play_now_button.png"))
+    //{
+    //  return EXIT_FAILURE;
+    //}
+    sf::Sprite goPlay(goPlay_pic);
+    goPlay.setPosition(800,500);
+
+    sf::Texture backToMenu_pic;
+    backToMenu_pic.loadFromFile("back_to_menu.png");
+    //if (!backToMenu_pic.loadFromFile("back_to_menu.png"))
+    //{
+    //  return EXIT_FAILURE;
+    //}
+    sf::Sprite backToMenu(backToMenu_pic);
+    backToMenu.setPosition(1100,10);
+
 
     while (menu.isOpen())
     {
@@ -756,7 +766,7 @@ Curling menu_launch()
             menu.draw(selectColorInstruction);
 
             menu.draw(goPlay);
-            menu.draw(goPlay_Text);
+            menu.draw(backToMenu);
             // Draw stone color previews
             for(int i = 0; i < 2; i++)
                 menu.draw(stoneColorPreviews[i]);
@@ -857,13 +867,18 @@ Curling menu_launch()
                 menu.close();
                 return Curling(1,UI_pt_win,scoreType,stoneColorPreviews[0].getFillColor(),stoneColorPreviews[1].getFillColor(),teamAName,teamBName);
             }
+            if (backToMenu.getGlobalBounds().contains(mouseClickPosition))
+            {
+                menu.close();
+                return Curling(2,UI_pt_win,'M',sf::Color::Green,sf::Color::Green,"Team A", "Team B");
+            }
         }
 
         //menu.display();
         sf::sleep(m1);
         m2=menu_clock.getElapsedTime();
     }
-    return Curling(2,UI_pt_win,'Q',sf::Color::Green,sf::Color::Green,"Team A", "Team B");
+    return Curling(3,UI_pt_win,'Q',sf::Color::Green,sf::Color::Green,"Team A", "Team B");
 }
 
 void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[],sf::RectangleShape textEntryCells[], sf::Text userNames[], string newTeamAName, string newTeamBName, sf::CircleShape scoreButtons[], int pointsSelect, sf::RectangleShape scoreCells[], char& scoreType)

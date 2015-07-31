@@ -19,7 +19,7 @@ const int BOARD_HEIGHT = 165;
 bool Program_on = true;
 
 Curling menu_launch();
-void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[],sf::RectangleShape textEntryCells[], sf::Text userNames[], string newTeamAName, string newTeamBName, sf::CircleShape scoreButtons[], int pointsSelect,sf::RectangleShape scoreCells[], char& scoreType);
+void options_launch(sf::RenderWindow& menu, sf::Font font, int numberOfTeams, sf::CircleShape colorChoices[], Stone stoneColorPreviews[],sf::RectangleShape textEntryCells[], sf::Text userNames[], string newTeamAName, string newTeamBName, sf::CircleShape scoreButtons[], int pointsSelect,sf::RectangleShape scoreCells[], char& scoreType);
 float getDistance(sf::Vector2f vector1, sf::Vector2f vector2);
 bool isColorPressed(sf::Vector2f mouseClickPosition, sf::CircleShape colorChoices[], sf::Color& selectedColor);
 
@@ -243,10 +243,11 @@ int main()
         sf::Text hintsGUIText;
 
         // Set settings for hints text box
-        sf::Vector2f hintsTextSize(sb[0].getLocalBounds().width + sb[1].getLocalBounds().width + sb[2].getLocalBounds().width, 245);
-        hintsBox.setSize(hintsTextSize);
-        hintsBox.setOrigin(hintsBox.getLocalBounds().width / 2, hintsBox.getLocalBounds().height / 2);
-        hintsBox.setPosition(BOARD_WIDTH / 2, 420);
+        //sf::Vector2f hintsTextSize(sb[0].getLocalBounds().width + sb[1].getLocalBounds().width + sb[2].getLocalBounds().width, 245);
+        sf::Vector2f hintsBoxLeftCorner (sb[0].getPosition().x - sb[0].getLocalBounds().width / 2, 290);
+        hintsBox.setSize(sf::Vector2f(340,245));
+        //hintsBox.setOrigin(hintsBox.getLocalBounds().width / 2, hintsBox.getLocalBounds().height / 2);
+        hintsBox.setPosition(hintsBoxLeftCorner);
         hintsBox.setOutlineColor(sf::Color::Black);
         hintsBox.setOutlineThickness(-1);
 
@@ -255,12 +256,13 @@ int main()
         hintsText.setFont(font);
         hintsText.setCharacterSize(18);
         hintsText.setColor(sf::Color::Black);
-        hintsText.setOrigin(hintsText.getLocalBounds().width / 2,hintsText.getLocalBounds().height / 2);
-        hintsText.setPosition(hintsBox.getPosition().x - hintsBox.getLocalBounds().width / 2 + hintsText.getLocalBounds().width / 2 + 10,hintsBox.getPosition().y);
+        //hintsText.setOrigin(hintsText.getLocalBounds().width / 2,hintsText.getLocalBounds().height / 2);
+        //hintsText.setPosition(hintsBox.getPosition().x - hintsBox.getLocalBounds().width / 2 + hintsText.getLocalBounds().width / 2 + 10,hintsBox.getPosition().y);
+        hintsText.setPosition(hintsBox.getPosition().x + 10,hintsBox.getPosition().y + 10);
 
         // Set settings for hints GUI box
         hintsGUIBox.setSize(sf::Vector2f(75,35));
-        hintsGUIBox.setPosition(hintsBox.getPosition().x - hintsBox.getLocalBounds().width / 2, hintsBox.getPosition().y - hintsBox.getLocalBounds().height / 2);
+        hintsGUIBox.setPosition(hintsBox.getPosition().x, hintsBox.getPosition().y);
         hintsGUIBox.setOutlineColor(sf::Color::Black);
         hintsGUIBox.setOutlineThickness(-1);
 
@@ -805,9 +807,9 @@ Curling menu_launch()
             }
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::T))
             {
-                menu.close();
-                scoreType = 'T';
-                return Curling(0,UI_pt_win,scoreType,sf::Color::Green,sf::Color::Green,"Team A", "Team B");
+                menu_mode = 'T';
+                //scoreType = 'T';
+                //return Curling(0,UI_pt_win,scoreType,sf::Color::Green,sf::Color::Green,"Team A", "Team B");
             }
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
             {
@@ -819,9 +821,11 @@ Curling menu_launch()
             menu.display();
 
         }
-        else if (menu_mode == 'I')
+        else if (menu_mode == 'I' || menu_mode == 'T')
         {
-            options_launch(menu,font,1,colorChoices,stoneColorPreviews,textEntryCells,userNames,teamAName,teamBName,scoreButtons,pointsSelect,scoreCells,scoreType);
+            int numberOfTeams = (menu_mode == 'I' ? 2 : 1);
+
+            options_launch(menu,font,numberOfTeams,colorChoices,stoneColorPreviews,textEntryCells,userNames,teamAName,teamBName,scoreButtons,pointsSelect,scoreCells,scoreType);
             UI_pt_win = pointsSelect+1;
             bool tabFlag;
 
@@ -958,12 +962,15 @@ Curling menu_launch()
     return Curling(3,UI_pt_win,'Q',sf::Color::Green,sf::Color::Green,"Team A", "Team B");
 }
 
-void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::CircleShape colorChoices[], Stone stoneColorPreviews[],sf::RectangleShape textEntryCells[], sf::Text userNames[], string newTeamAName, string newTeamBName, sf::CircleShape scoreButtons[], int pointsSelect, sf::RectangleShape scoreCells[], char& scoreType)
+void options_launch(sf::RenderWindow& menu, sf::Font font, int numberOfTeams, sf::CircleShape colorChoices[], Stone stoneColorPreviews[],sf::RectangleShape textEntryCells[], sf::Text userNames[], string newTeamAName, string newTeamBName, sf::CircleShape scoreButtons[], int pointsSelect, sf::RectangleShape scoreCells[], char& scoreType)
 {
+    // Add text labels to page
     sf::Text optionsLabels[5];
     sf::Vector2f labelPositions[5] = {sf::Vector2f(WINDOW_WIDTH / 2 - 75,5),sf::Vector2f(20,15), sf::Vector2f(20,65), sf::Vector2f(20,240), sf::Vector2f(20,415)};
     string labelStrings[5] = {"Game Options", "Enter:", "1) Names", "2) Stone Colors", "3) Scoring Type"};
-    for(int i = 0; i < 5; i++)
+
+    int numberOfLabels = (numberOfTeams == 2 ? 5 : 4);
+    for(int i = 0; i < numberOfLabels; i++)
     {
         optionsLabels[i].setFont(font);
         optionsLabels[i].setPosition(labelPositions[i]);
@@ -976,7 +983,7 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::Cir
     // Display name preview labels
     string namePreviewStrings[2] = {"Team A", "Team B"};
     sf::Text namePreviews[2];
-    for(int i = 0; i < 2; i++)
+    for(int i = 0; i < numberOfTeams; i++)
     {
         namePreviews[i].setString(namePreviewStrings[i]);
         namePreviews[i].setFont(font);
@@ -992,7 +999,7 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::Cir
     userNames[0].setString(newTeamAName);
     userNames[1].setString(newTeamBName);
 
-    for(int i = 0; i < 2; i++)
+    for(int i = 0; i < numberOfTeams; i++)
     {
         textEntryCells[i].setSize(cellSize);
         textEntryCells[i].setOrigin(textEntryCells[i].getSize().x / 2,textEntryCells[i].getSize().y / 2);
@@ -1031,7 +1038,7 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::Cir
     // Create labels above preview of stone with user selected color
     string stonePreviewStrings[2] = {"Team A", "Team B"};
     sf::Text stonePreviews[2];
-    for(int i = 0; i < 2; i++)
+    for(int i = 0; i < numberOfTeams; i++)
     {
         stonePreviews[i].setString(stonePreviewStrings[i]);
         stonePreviews[i].setFont(font);
@@ -1045,7 +1052,7 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::Cir
     // Set color preview stones with default colors
     sf::Vector2f stonePositions[2] = {sf::Vector2f(350,310),sf::Vector2f(600,310)};
     float stonePreviewRadius = 40;
-    for(int i = 0; i < 2; i++)
+    for(int i = 0; i < numberOfTeams; i++)
     {
         stoneColorPreviews[i].setRadius(stonePreviewRadius);
         stoneColorPreviews[i].setOutlineThickness(40 / (10*(11.4/12)*.5 + 2) * -2.0);
@@ -1056,66 +1063,68 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::Cir
     }
 
     //Scoring options
-    //sf::RectangleShape scoreCells[2];
-    sf::Text scoreTextLabels[2];
-    scoreTextLabels[0].setString("Ends");
-    scoreTextLabels[1].setString("Points");
-    sf::Vector2f scoreCellSize(100,40);
-    sf::Vector2f scoreCellSize_t(300,40);
-    for (int s=0; s<2; s++)
+    if(numberOfTeams == 2)
     {
-        scoreCells[s].setSize(scoreCellSize);
-        scoreCells[s].setOrigin(scoreCellSize.x/2,scoreCellSize.y/2);
-        scoreCells[s].setFillColor(sf::Color(160,160,160));
-        scoreCells[s].setPosition(450+(s*100),475);
-        scoreCells[s].setOutlineThickness(-2);
-        if (scoreType == 'P')
-            scoreCells[1].setOutlineThickness(-10);
-        else
-            scoreCells[0].setOutlineThickness(-10);
-        scoreCells[s].setOutlineColor(sf::Color::Black);
-        scoreTextLabels[s].setFont(font);
-        scoreTextLabels[s].setCharacterSize(20);
-        scoreTextLabels[s].setOrigin(scoreTextLabels[s].getLocalBounds().width/2,scoreTextLabels[s].getLocalBounds().height/2);
-        scoreTextLabels[s].setPosition(scoreCells[s].getPosition().x,scoreCells[s].getPosition().y-5);
-        menu.draw(scoreCells[s]);
-        menu.draw(scoreTextLabels[s]);
-    }
-    sf::Text scoreButtonValues[8];
-    float buttonRadius = 25.0;
-    //int valueSelect = 0;
-    int valueSelect = pointsSelect;
-    for (int b=0; b<8; b++)
-    {
-        scoreButtons[b].setFillColor(sf::Color(255,255,255));
-        scoreButtons[b].setRadius(buttonRadius);
-        scoreButtons[b].setOrigin(buttonRadius,buttonRadius);
-        scoreButtons[b].setOutlineThickness(-10);
-        scoreButtons[b].setOutlineColor(sf::Color(160,160,160));
-        if (b==valueSelect)
-            scoreButtons[b].setOutlineColor(sf::Color(0,0,0));
-        scoreButtons[b].setPosition(300+b*55,560);
+        sf::Text scoreTextLabels[2];
+        scoreTextLabels[0].setString("Ends");
+        scoreTextLabels[1].setString("Points");
+        sf::Vector2f scoreCellSize(100,40);
+        sf::Vector2f scoreCellSize_t(300,40);
+        for (int s=0; s<2; s++)
+        {
+            scoreCells[s].setSize(scoreCellSize);
+            scoreCells[s].setOrigin(scoreCellSize.x/2,scoreCellSize.y/2);
+            scoreCells[s].setFillColor(sf::Color(160,160,160));
+            scoreCells[s].setPosition(450+(s*100),475);
+            scoreCells[s].setOutlineThickness(-2);
+            if (scoreType == 'P')
+                scoreCells[1].setOutlineThickness(-10);
+            else
+                scoreCells[0].setOutlineThickness(-10);
+            scoreCells[s].setOutlineColor(sf::Color::Black);
+            scoreTextLabels[s].setFont(font);
+            scoreTextLabels[s].setCharacterSize(20);
+            scoreTextLabels[s].setOrigin(scoreTextLabels[s].getLocalBounds().width/2,scoreTextLabels[s].getLocalBounds().height/2);
+            scoreTextLabels[s].setPosition(scoreCells[s].getPosition().x,scoreCells[s].getPosition().y-5);
+            menu.draw(scoreCells[s]);
+            menu.draw(scoreTextLabels[s]);
+        }
+        sf::Text scoreButtonValues[8];
+        float buttonRadius = 25.0;
+        //int valueSelect = 0;
+        int valueSelect = pointsSelect;
+        for (int b=0; b<8; b++)
+        {
+            scoreButtons[b].setFillColor(sf::Color(255,255,255));
+            scoreButtons[b].setRadius(buttonRadius);
+            scoreButtons[b].setOrigin(buttonRadius,buttonRadius);
+            scoreButtons[b].setOutlineThickness(-10);
+            scoreButtons[b].setOutlineColor(sf::Color(160,160,160));
+            if (b==valueSelect)
+                scoreButtons[b].setOutlineColor(sf::Color(0,0,0));
+            scoreButtons[b].setPosition(300+b*55,560);
 
-        scoreButtonValues[b].setString(to_string(b+1));
-        scoreButtonValues[b].setCharacterSize(20);
-        scoreButtonValues[b].setFont(font);
-        scoreButtonValues[b].setColor(sf::Color::Black);
-        scoreButtonValues[b].setOrigin(scoreButtonValues[b].getLocalBounds().width/2,scoreButtons[b].getLocalBounds().height/2);
-        scoreButtonValues[b].setPosition(300+b*55,572);
-        menu.draw(scoreButtons[b]);
-        menu.draw(scoreButtonValues[b]);
-    }
-    sf::Text scoringInstruction[2];
-    scoringInstruction[0].setString("Select a game score type");
-    scoringInstruction[1].setString("Select a value to play until");
-    for (int si=0; si<2; si++)
-    {
-        scoringInstruction[si].setColor(sf::Color::Black);
-        scoringInstruction[si].setFont(font);
-        scoringInstruction[si].setCharacterSize(15);
-        scoringInstruction[si].setOrigin(scoringInstruction[si].getLocalBounds().width/2,scoringInstruction[si].getLocalBounds().height/2);
-        scoringInstruction[si].setPosition(500,440+si*80);
-        menu.draw(scoringInstruction[si]);
+            scoreButtonValues[b].setString(to_string(b+1));
+            scoreButtonValues[b].setCharacterSize(20);
+            scoreButtonValues[b].setFont(font);
+            scoreButtonValues[b].setColor(sf::Color::Black);
+            scoreButtonValues[b].setOrigin(scoreButtonValues[b].getLocalBounds().width/2,scoreButtons[b].getLocalBounds().height/2);
+            scoreButtonValues[b].setPosition(300+b*55,572);
+            menu.draw(scoreButtons[b]);
+            menu.draw(scoreButtonValues[b]);
+        }
+        sf::Text scoringInstruction[2];
+        scoringInstruction[0].setString("Select a game score type");
+        scoringInstruction[1].setString("Select a value to play until");
+        for (int si=0; si<2; si++)
+        {
+            scoringInstruction[si].setColor(sf::Color::Black);
+            scoringInstruction[si].setFont(font);
+            scoringInstruction[si].setCharacterSize(15);
+            scoringInstruction[si].setOrigin(scoringInstruction[si].getLocalBounds().width/2,scoringInstruction[si].getLocalBounds().height/2);
+            scoringInstruction[si].setPosition(500,440+si*80);
+            menu.draw(scoringInstruction[si]);
+        }
     }
 
 }

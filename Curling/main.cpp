@@ -178,7 +178,10 @@ int main()
 
         sb[0].setFillColor(game.getTeam_A_Color());
         sb[1].setFillColor(sf::Color::Black);
-        sb[2].setFillColor(game.getTeam_B_Color());
+        if(game.getPlayType() == 1)
+            sb[2].setFillColor(game.getTeam_B_Color());
+        else
+            sb[2].setFillColor(game.getTeam_A_Color());
 
         for(int i = 0; i < 6; i++)
         {
@@ -189,6 +192,14 @@ int main()
         sb_Text[0].setString(game.getTeamAName());
         sb_Text[1].setString("Set");
         sb_Text[2].setString(game.getTeamBName());
+        if(game.getPlayType() == 0)
+        {
+            sb_Text[3].setColor(sf::Color::White);
+            sb_Text[2].setColor(game.getTeam_A_Color());
+            sb_Text[5].setColor(sf::Color::White);
+        }
+
+
 
         //Find larger string and set size of scoreboard boxes to that size
         sf::Vector2f boxSize;
@@ -627,19 +638,24 @@ int main()
                 }
 
                 // Determine winner of end and number of points earned if finished end
-                if(game.getPlayType() == 1 && !game.checkPlay_Status(s_b,NUM_OF_STONES) && game.getTurnNumber() == NUM_OF_STONES && !game.isGameOver() && winnerDeclaredCounter == 0)
+                if(!game.checkPlay_Status(s_b,NUM_OF_STONES) && game.getTurnNumber() == NUM_OF_STONES && !game.isGameOver() && winnerDeclaredCounter == 0)
                 {
-                    winnerDeclaredCounter++;
                     game.setCurrentSet(game.getCurrentSet() + 1);
-                    // Determine winner
-                    int winner = game.findClosestStone(s_b,NUM_OF_STONES);
+                    if(game.getPlayType() == 1)
+                    {
+                        winnerDeclaredCounter++;
+                        // Determine winner
+                        int winner = game.findClosestStone(s_b,NUM_OF_STONES);
 
-                    // Determine number of points won if not a tie game
-                    int points = 0;
-                    if(winner != -1 && game.inHouse(s_b[winner], Targets[0]))
-                        points = game.findPointsScored(winner,s_b,Targets[0]);
+                        // Determine number of points won if not a tie game
+                        int points = 0;
+                        if(winner != -1 && game.inHouse(s_b[winner], Targets[0]))
+                            points = game.findPointsScored(winner,s_b,Targets[0]);
 
-                    game.updateScoreboard(winner,points,sb_Text[3],sb_Text[5],sb_Text[4]);
+                        game.updateScoreboard(winner,points,sb_Text[3],sb_Text[5],sb_Text[4]);
+                    }
+                    else
+                        sb_Text[4].setString(to_string(game.getCurrentSet()));
                 }
 
                 // Begin new end if neither player has reached required number of points
@@ -868,12 +884,17 @@ Curling menu_launch()
                 if(isColorPressed(mouseClickPosition,colorChoices,selectedColor))
                 {
                     userSettingsChanged = true;
-                    stoneColorPreviews[mouseClickCounter % 2].setFillColor(selectedColor);
-                    if ((mouseClickCounter % 2) > 0)
-                        C_instruct = "Select Color for Team A";
+                    if(numberOfTeams == 1)
+                        stoneColorPreviews[0].setFillColor(selectedColor);
                     else
-                        C_instruct = "Select Color for Team B";
-                    mouseClickCounter++;
+                    {
+                        stoneColorPreviews[mouseClickCounter % 2].setFillColor(selectedColor);
+                        if ((mouseClickCounter % 2) > 0)
+                            C_instruct = "Select Color for Team A";
+                        else
+                            C_instruct = "Select Color for Team B";
+                        mouseClickCounter++;
+                    }
                 }
                 //check score type button click
                 else if(scoreCells[0].getGlobalBounds().contains(mouseClickPosition))
@@ -920,7 +941,7 @@ Curling menu_launch()
                         if(event.text.unicode < 128 && event.text.unicode != 13)
                         {
                             // If user presses tab in Team A textbox, move cursor to Team B textbox
-                            if(event.text.unicode == 9 && selectedTextBox == 0)
+                            if(event.text.unicode == 9 && selectedTextBox == 0 && numberOfTeams == 2)
                                 tabFlag = true;
 
                             if(selectedTextBox == 0)
@@ -946,7 +967,10 @@ Curling menu_launch()
             if (goPlay.getGlobalBounds().contains(mouseClickPosition))
             {
                 menu.close();
-                return Curling(1,UI_pt_win,scoreType,stoneColorPreviews[0].getFillColor(),stoneColorPreviews[1].getFillColor(),teamAName,teamBName);
+                if(numberOfTeams == 2)
+                    return Curling(1,UI_pt_win,scoreType,stoneColorPreviews[0].getFillColor(),stoneColorPreviews[1].getFillColor(),teamAName,teamBName);
+                else
+                    return Curling(0,UI_pt_win,scoreType,stoneColorPreviews[0].getFillColor(),stoneColorPreviews[1].getFillColor(),teamAName,teamBName);
             }
             if (backToMenu.getGlobalBounds().contains(mouseClickPosition))
             {

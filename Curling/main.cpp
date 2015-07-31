@@ -585,9 +585,9 @@ int main()
                 if(game.isGameOver())
                 {
                     if(game.getTeam_A_Points() > game.getTeam_B_Points())
-                        winning_message.setString("Team A Wins!");
+                        winning_message.setString(game.getTeamAName() + " Wins!");
                     else if (game.getTeam_B_Points() > game.getTeam_A_Points())
-                        winning_message.setString("Team B Wins!");
+                        winning_message.setString(game.getTeamBName() + " Wins!");
                     else
                         winning_message.setString("Tie Game!");
                     app.draw(winning_message);

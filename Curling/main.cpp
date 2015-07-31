@@ -827,7 +827,7 @@ Curling menu_launch()
 
             menu.draw(introImageSprite);
 
-            scoreType = 'P';
+            scoreType = 'E';
 
             if(introClock.getElapsedTime().asSeconds() > 0.5)
             {

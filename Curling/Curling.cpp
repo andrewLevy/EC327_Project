@@ -14,20 +14,23 @@ const int BOARD_HEIGHT = 165;
 const sf::Vector2f zoomButtonPosition(180,375);
 const float zoomRatio = 2.5;
 
-Curling::Curling(int newPlayType, int newPointsToWin, char newPointType, sf::Color newTeamAColor, sf::Color newTeamBColor, string newTeamAName, string newTeamBName)
+Curling::Curling(int newPlayType, int newNumberToWin, char newScoringType, sf::Color newTeamAColor, sf::Color newTeamBColor, string newTeamAName, string newTeamBName)
 {
     // Data field to specity game type includes practice (playType = 0) or One-on-One (playType = 1)
     playType = newPlayType;
-    pointsToWin = newPointsToWin;
-    PointType = newPointType;
+    numberToWin = newNumberToWin;
+    scoringType = newScoringType;
     team_A_points = 0;
     team_B_points = 0;
     team_A_color = newTeamAColor;
     team_B_color = newTeamBColor;
+    turnNumber = 0;
+    currentSet = 1;
     if (newTeamAName.empty() || newTeamAName == "Enter Team A Name")
         team_A_name = "Team A";
     else
         team_A_name = newTeamAName;
+
     if (newTeamBName.empty() || newTeamBName == "Enter Team B Name")
         team_B_name = "Team B";
     else
@@ -443,20 +446,19 @@ int Curling::calculatePointsEarned(const int winner, Stone team_even[], Stone te
         return getPoints(team_odd, closest_opponent, target);
 }
 
-void Curling::updateScoreboard(int winner, int points, sf::Text& team_A_score, sf::Text& team_B_score)
+void Curling::updateScoreboard(int winner, int points, sf::Text& team_A_score, sf::Text& team_B_score,sf::Text& setNumber)
 {
     if(winner % 2 == 0)
     {
         updateTeam_A_Points(points);
-        cout << "Team A wins " << points << " points!" << endl;
         team_A_score.setString(to_string(getTeam_A_Points()));
     }
-    else
+    else if(winner != -1)
     {
         updateTeam_B_Points(points);
-        cout << "Team B wins " << points << " points!" << endl;
         team_B_score.setString(to_string(getTeam_B_Points()));
     }
+    setNumber.setString(to_string(currentSet));
 }
 
 bool Curling::checkPlay_Status(Stone stone_array[], int numberOfStones)
@@ -485,14 +487,14 @@ int Curling::getPlayType()
     return playType;
 }
 
-int Curling::getPointsToWin()
+int Curling::getNumberToWin()
 {
-    return pointsToWin;
+    return numberToWin;
 }
 
-char Curling::getPointType()
+char Curling::getScoringType()
 {
-    return PointType;
+    return scoringType;
 }
 
 int Curling::getTeam_A_Points()
@@ -525,6 +527,16 @@ string Curling::getTeamBName()
     return team_B_name;
 }
 
+int Curling::getTurnNumber()
+{
+    return turnNumber;
+}
+
+int Curling::getCurrentSet()
+{
+    return currentSet;
+}
+
 void Curling::updateTeam_A_Points(int points)
 {
     team_A_points += points;
@@ -535,13 +547,23 @@ void Curling::updateTeam_B_Points(int points)
     team_B_points += points;
 }
 
+void Curling::setTurnNumber(int newTurnNumber)
+{
+    turnNumber = newTurnNumber;
+}
+
+void Curling::setCurrentSet(int newCurrentSet)
+{
+    currentSet = newCurrentSet;
+}
+
 string Curling::Winner()
 {
-    if (getTeam_A_Points() >= getPointsToWin())
+    if (getTeam_A_Points() >= getNumberToWin())
     {
         return "A";
     }
-    else if (getTeam_B_Points() >= getPointsToWin())
+    else if (getTeam_B_Points() >= getNumberToWin())
     {
         return "B";
     }
@@ -549,4 +571,14 @@ string Curling::Winner()
     {
         return "None";
     }
+}
+
+bool Curling::isGameOver()
+{
+    if(playType == 1 && scoringType == 'E' && currentSet > numberToWin)
+        return true;
+    else if(playType == 1 && scoringType == 'P' && (team_A_points >= numberToWin || team_B_points >= numberToWin) && turnNumber == 16)
+        return true;
+    else
+        return false;
 }

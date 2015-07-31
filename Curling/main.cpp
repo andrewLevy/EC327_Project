@@ -48,9 +48,11 @@ int main()
 
         // Initialize stone position and coloring
         game.prepareStones(s_b);
+        cout << game.getNumberToWin() << endl;
 
         sf::Time t1=sf::seconds(1.0/60.0);
         sf::Time t2;
+        sf::Time t3;
         sf::Time t_sweep[2];
         sf::Clock myclock;
 
@@ -61,13 +63,14 @@ int main()
         const float MIN_SPIN = DEGREE_PER_TURN * (PI / 180) / 8 / 60;
 
         bool Stone_inPlay = false;
-        int Stone_turn = 0;
+        //int Stone_turn = 0;
 
         char Play_Mode = 'B';
         char last_Mode = 'B';
         bool Changed_Mode = false;
         bool lastThrow = true;
         int setNum = 0;
+        int clockCounter = 0;
 
 
 
@@ -170,48 +173,65 @@ int main()
         //Create the Score Board
         sf::RectangleShape sb[6];
         sf::Text sb_Text[6];
-        sf::Vector2f sb_size[6]={sf::Vector2f(150,50),sf::Vector2f(100,50),sf::Vector2f(150,50),sf::Vector2f(150,50),sf::Vector2f(100,50),sf::Vector2f(150,50)};
+        //sf::Vector2f sb_size[6]={sf::Vector2f(150,50),sf::Vector2f(100,50),sf::Vector2f(150,50),sf::Vector2f(150,50),sf::Vector2f(100,50),sf::Vector2f(150,50)};
         //game.drawScoreboard(sb,sb_Text,sb_size,font);
 
-        sb[0].setFillColor(sf::Color::Green);
+        sb[0].setFillColor(game.getTeam_A_Color());
         sb[1].setFillColor(sf::Color::Black);
-        sb[2].setFillColor(sf::Color::Yellow);
+        sb[2].setFillColor(game.getTeam_B_Color());
+
+        for(int i = 0; i < 6; i++)
+        {
+            sb_Text[i].setCharacterSize(30);
+            sb_Text[i].setFont(font);
+            sb_Text[i].setColor(sf::Color::Black);
+        }
         sb_Text[0].setString(game.getTeamAName());
-        sb_Text[1].setString("End");
+        sb_Text[1].setString("Set");
         sb_Text[2].setString(game.getTeamBName());
+
+        //Find larger string and set size of scoreboard boxes to that size
+        sf::Vector2f boxSize;
+        if(sb_Text[0].getLocalBounds().width >= sb_Text[2].getLocalBounds().width)
+            boxSize = sf::Vector2f(sb_Text[0].getLocalBounds().width + 15,50);
+        else
+            boxSize = sf::Vector2f(sb_Text[2].getLocalBounds().width + 15,50);
+
+        sb[0].setSize(boxSize);
+        sb[2].setSize(boxSize);
+        sb[3].setSize(boxSize);
+        sb[5].setSize(boxSize);
+        sb[1].setSize(sf::Vector2f(100,50));
+        sb[4].setSize(sf::Vector2f(100,50));
+
 
         for (int b=0; b<6; b++)
         {
-            sb[b].setSize(sb_size[b]);
-            sb[b].setOrigin(sb_size[b].x/2,sb_size[b].y/2);
+            sb[b].setOrigin(sb[b].getLocalBounds().width / 2,sb[b].getLocalBounds().height / 2);
             sb[b].setOutlineColor(sf::Color::Black);
             sb[b].setOutlineThickness(-2.0);
-            sb_Text[b].setFont(font);
             sb_Text[b].setOrigin(sb_Text[b].getLocalBounds().width/2,sb_Text[b].getLocalBounds().height/2);
-            sb_Text[b].setPosition(sb[b].getPosition());
-            sb_Text[b].setColor(sf::Color::Black);
+
             if (b<3)
             {
-                sb[b].setPosition(BOARD_WIDTH/2+(b-1)*sb_size[b].x,195);
-                sb_Text[b].setOrigin(sb_Text[b].getLocalBounds().width/2,sb_Text[b].getLocalBounds().height/2);
-                sb_Text[b].setPosition(sb[b].getPosition());
-                sb_Text[b].setCharacterSize(30);
+                sb[b].setPosition(BOARD_WIDTH / 2 + (b - 1) * (sb[1].getLocalBounds().width / 2 + sb[b].getLocalBounds().width / 2),195);
+                sb_Text[b].setPosition(sb[b].getPosition() + sf::Vector2f(0,-7));
             }
             else
             {
-                sb[b].setPosition(BOARD_WIDTH/2+(b-4)*sb_size[b].x,245);
-                sb_Text[b].setOrigin(sb_Text[b].getLocalBounds().width/2,sb_Text[b].getLocalBounds().height/2);
-                sb_Text[b].setPosition(sb[b].getPosition());
+                sb[b].setPosition(BOARD_WIDTH / 2 + (b - 4) * (sb[1].getLocalBounds().width / 2 + sb[b].getLocalBounds().width / 2),245);
+                sb_Text[b].setPosition(sb[b].getPosition() + sf::Vector2f(0,-7));
                 sb_Text[b].setCharacterSize(20);
                 sb_Text[b].setString("0");
             }
         }
         sb_Text[1].setColor(sf::Color::White);
-        sb_Text[4].setString("1");
+        sb_Text[4].setString(to_string(game.getCurrentSet()));
 
         //Winner Text
         sf::Text winning_message("Winner",font,50);
-        winning_message.setPosition(BOARD_WIDTH/2,500);
+        winning_message.setOrigin(winning_message.getLocalBounds().width / 2, winning_message.getLocalBounds().height / 2);
+        winning_message.setPosition(BOARD_WIDTH / 2 - 25,450);
         winning_message.setColor(sf::Color::Black);
 
 
@@ -246,11 +266,14 @@ int main()
 
             Stone_inPlay = game.checkPlay_Status(s_b, NUM_OF_STONES);
             sf::RectangleShape boundaryLines[4];
-            Stone zoomStone = s_b[Stone_turn];
+            Stone zoomStone;
+            if(game.getTurnNumber() < NUM_OF_STONES)
+                zoomStone = s_b[game.getTurnNumber()];
+
             // Place next stone in position for delivery, set user inputs including Stone speed, direction, and spin to default settings, and create zoomed in view of user settings if Stone is not in play
             if (!Stone_inPlay)
             {
-                s_b[Stone_turn].setPosition(1110,BOARD_HEIGHT/2);
+                s_b[game.getTurnNumber()].setPosition(1110,BOARD_HEIGHT/2);
 
                 // Draw array with length and direction as specified by user
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && (arrow.getRotation() > 315 || arrow.getRotation() <= 45))
@@ -306,16 +329,19 @@ int main()
 
                 // Display zoomed in view of user inputs
                 sf::RectangleShape zoomBoundary[4];
-                game.drawUserInputsZoom(boundaryLines,s_b[Stone_turn], zoomStone, arrow, arrowZoom, zoomBoundary);
-
-                // Draw zoomed in view of user inputs
-                app.draw(arrowZoom);
-                for(int i = 0; i < 4; i++)
+                if(game.getTurnNumber() < NUM_OF_STONES)
                 {
-                    app.draw(boundaryLines[i]);
-                    app.draw(zoomBoundary[i]);
+                    game.drawUserInputsZoom(boundaryLines,s_b[game.getTurnNumber()], zoomStone, arrow, arrowZoom, zoomBoundary);
+
+                    // Draw zoomed in view of user inputs
+                    app.draw(arrowZoom);
+                    for(int i = 0; i < 4; i++)
+                    {
+                        app.draw(boundaryLines[i]);
+                        app.draw(zoomBoundary[i]);
+                    }
+                    app.draw(zoomStone);
                 }
-                app.draw(zoomStone);
 
                 // Create user zoom window label
                 sf::Text inputZoomLabel;
@@ -328,7 +354,6 @@ int main()
                 app.draw(inputZoomLabel);
             }
 
-            //app.draw(houseBoundary);
             // Draw House
             app.draw(houseZoomLabel);
             for (int t=0; t<4; t++)
@@ -349,7 +374,7 @@ int main()
                 app.draw(houseLines[i]);
             }
 
-            //Draw Score Board
+            //Draw Scoreboard
             for (int b=0; b<6; b++)
             {
                 app.draw(sb[b]);
@@ -386,32 +411,32 @@ int main()
                 }
                 if (!game.checkPlay_Status(s_b,NUM_OF_STONES))
                 {
-                    if (game.inValid_Throw(s_b[Stone_turn - 1]))
+                    if (game.inValid_Throw(s_b[game.getTurnNumber() - 1]))
                     {
                         lastThrow = false;
-                        s_b[Stone_turn - 1].setPosition(-5,-5);
+                        s_b[game.getTurnNumber() - 1].setPosition(-5,-5);
                     }
                 }
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && !game.checkPlay_Status(s_b,NUM_OF_STONES))
                 {
                     lastThrow = true;
-                    if (Stone_turn < NUM_OF_STONES)
+                    if (game.getTurnNumber() < NUM_OF_STONES)
                     {
                         // Begin turn by changing status to "in play" and setting the initial speed, direction, and speed to values specified by user
-                        s_b[Stone_turn].changeStatus();
-                        s_b[Stone_turn].setInitialSpeed(arrow.getScale().x*45);
-                        s_b[Stone_turn].setSpin(spinCounter * MIN_SPIN);
+                        s_b[game.getTurnNumber()].changeStatus();
+                        s_b[game.getTurnNumber()].setInitialSpeed(arrow.getScale().x * 45);
+                        s_b[game.getTurnNumber()].setSpin(spinCounter * MIN_SPIN);
 
 
                         if(arrow.getRotation() <= 45)
                         {
-                            s_b[Stone_turn].setInitialDirection((180 + arrow.getRotation())*PI/180);
+                            s_b[game.getTurnNumber()].setInitialDirection((180 + arrow.getRotation())*PI/180);
                         }
                         else
                         {
-                            s_b[Stone_turn].setInitialDirection((180 - (360 - arrow.getRotation()))*PI/180);
+                            s_b[game.getTurnNumber()].setInitialDirection((180 - (360 - arrow.getRotation()))*PI/180);
                         }
-                        Stone_turn++;
+                        game.setTurnNumber(game.getTurnNumber() + 1);
 
                         // Return spin icons to default settings
                         spinCounter = 0;
@@ -430,7 +455,7 @@ int main()
                     // Setting Friction
                     if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && game.checkPlay_Status(s_b,NUM_OF_STONES))
                     {
-                        int x = game.getClostest_movingStone(s_b,sf::Mouse::getPosition(),NUM_OF_STONES);
+                        int x = game.getClostest_movingStone(s_b,sf::Mouse::getPosition(app),NUM_OF_STONES);
                         s_b[x].setFriction(0.8*5*9.81*.0168/60);
                         pos_sw_x = s_b[x].getPosition().x;
                         pos_sw_y = s_b[x].getPosition().y;
@@ -467,12 +492,6 @@ int main()
                     s_b[b].setVelocity();
                     s_b[b].makeMove();
                 }
-
-                /*for(int i = 0; i < 16; i++)
-                {
-                    cout << "Stone Number: " << i << " ";
-                    cout << "Postion: " << s_b[i].getPosition().x << " " << s_b[i].getPosition().y << endl;
-                }*/
 
                 // Check for stone collisions
                 int collisionStones[2];
@@ -534,64 +553,52 @@ int main()
                         game.markClosestStone(triangleHouse,closest,houseStones);
                         app.draw(triangleHouse);
                     }
-
-                    // Add marker to closest stone in House view
-                    //int closestInHouse = game.findClosestStone(houseStones);
-                    /*if(closestInHouse != -1)
-                    {
-                        sf::CircleShape triangle(5 * 2.5,3);
-
-                    }*/
                 }
 
                 // Determine winner of end and number of points earned if finished end
-                if(game.getPlayType() == 1 && Stone_turn == NUM_OF_STONES && !game.checkPlay_Status(s_b,NUM_OF_STONES) && winnerDeclaredCounter == 0)
+                if(game.getPlayType() == 1 && !game.checkPlay_Status(s_b,NUM_OF_STONES) && game.getTurnNumber() == NUM_OF_STONES && !game.isGameOver() && winnerDeclaredCounter == 0)
                 {
                     winnerDeclaredCounter++;
+                    game.setCurrentSet(game.getCurrentSet() + 1);
                     // Determine winner
                     int winner = game.findClosestStone(s_b,NUM_OF_STONES);
 
                     // Determine number of points won if not a tie game
-                    int points;
+                    int points = 0;
                     if(winner != -1 && game.inHouse(s_b[winner], Targets[0]))
                         points = game.findPointsScored(winner,s_b,Targets[0]);
 
-                    // Update scoreboard if no tie
-                    if(winner == -1 || !game.inHouse(s_b[winner], Targets[0]))
-                        cout << "Tie game! No points earned." << endl;
-                    else
-                        game.updateScoreboard(winner,points,sb_Text[3],sb_Text[5]);
-
-                    // Print current score
-                    cout << "Current Score - " << "Team A: " << game.getTeam_A_Points() << " " << "Team B: " << game.getTeam_B_Points() << endl;
+                    game.updateScoreboard(winner,points,sb_Text[3],sb_Text[5],sb_Text[4]);
                 }
 
                 // Begin new end if neither player has reached required number of points
-                if(Stone_turn == NUM_OF_STONES && !game.checkPlay_Status(s_b,NUM_OF_STONES) && game.getTeam_A_Points() < game.getPointsToWin() && game.getTeam_B_Points() < game.getPointsToWin())
+                if(game.getTurnNumber() == NUM_OF_STONES && !game.checkPlay_Status(s_b,NUM_OF_STONES) && !game.isGameOver())
                 {
                     //Stone::resetNumberofStones();
                     Stone newStoneSet[NUM_OF_STONES];
                     for(int i = 0; i < NUM_OF_STONES; i++)
                         s_b[i] = newStoneSet[i];
                     game.prepareStones(s_b);
-                    Stone_turn = 0;
+                    game.setTurnNumber(0);
                     winnerDeclaredCounter = 0;
                 }
-                else if(game.Winner() == "A")
+                if(game.isGameOver())
                 {
-                    winning_message.setString("Team A Wins!!!");
+                    if(game.getTeam_A_Points() > game.getTeam_B_Points())
+                        winning_message.setString("Team A Wins!");
+                    else if (game.getTeam_B_Points() > game.getTeam_A_Points())
+                        winning_message.setString("Team B Wins!");
+                    else
+                        winning_message.setString("Tie Game!");
                     app.draw(winning_message);
-                    sf::Time win_pause(sf::seconds(5.0));
-                    sf::sleep(win_pause);
-                    app.close();
-                }
-                else if (game.Winner() == "B")
-                {
-                    winning_message.setString("Team B Wins!!!");
-                    app.draw(winning_message);
-                    sf::Time win_pause(sf::seconds(5.0));
-                    sf::sleep(win_pause);
-                    app.close();
+
+                    if(clockCounter == 0)
+                    {
+                        t3=myclock.restart();
+                        clockCounter++;
+                    }
+                    if(myclock.getElapsedTime().asSeconds() > 5)
+                        app.close();
                 }
             }
             // Pause Game
@@ -753,8 +760,8 @@ Curling menu_launch()
             sf::FloatRect nameEntryBox2 = textEntryCells[1].getGlobalBounds();
             if(!userSettingsChanged)
             {
-                stoneColorPreviews[0].setFillColor(sf::Color::Black);
-                stoneColorPreviews[1].setFillColor(sf::Color(230,230,230));
+                stoneColorPreviews[0].setFillColor(sf::Color(230,230,230));
+                stoneColorPreviews[1].setFillColor(sf::Color(255,140,0));
             }
 
             sf::Text selectColorInstruction;
@@ -789,7 +796,7 @@ Curling menu_launch()
                 {
                     userSettingsChanged = true;
                     stoneColorPreviews[mouseClickCounter % 2].setFillColor(selectedColor);
-                    if ((mouseClickCounter  %2) > 0)
+                    if ((mouseClickCounter % 2) > 0)
                         C_instruct = "Select Color for Team A";
                     else
                         C_instruct = "Select Color for Team B";
@@ -809,6 +816,7 @@ Curling menu_launch()
                     }
                 }
 
+                // Boolean flag to enable user to tab from first textbox to second textbox
                 tabFlag = false;
             }
 
@@ -836,7 +844,7 @@ Curling menu_launch()
                 {
                     if(event.type == sf::Event::TextEntered)
                     {
-                        if(event.text.unicode < 128)
+                        if(event.text.unicode < 128 && event.text.unicode != 13)
                         {
                             // If user presses tab in Team A textbox, move cursor to Team B textbox
                             if(event.text.unicode == 9 && selectedTextBox == 0)
@@ -846,14 +854,14 @@ Curling menu_launch()
                             {
                                 if(event.text.unicode == 8 && teamAName.size() > 0)
                                     teamAName.erase(teamAName.size() - 1,1);
-                                else if(event.text.unicode != 8 && event.text.unicode != 9)
+                                else if(event.text.unicode != 8 && event.text.unicode != 9 && teamAName.size() < 10)
                                     teamAName.push_back(static_cast<char>(event.text.unicode));
                             }
                             else
                             {
                                 if(event.text.unicode == 8 && teamBName.size() > 0)
                                     teamBName.erase(teamBName.size() - 1,1);
-                                else if(event.text.unicode != 8 && event.text.unicode != 9)
+                                else if(event.text.unicode != 8 && event.text.unicode != 9 && teamBName.size() < 10)
                                     teamBName.push_back(static_cast<char>(event.text.unicode));
                             }
                         }
@@ -936,7 +944,7 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int playType, sf::Cir
 
     // Display color choices
     const int NUMBER_OF_COLORS = 8;
-    sf::Color colorOptions[NUMBER_OF_COLORS] = {sf::Color::Black,sf::Color(230,230,230),sf::Color(230,0,0),sf::Color::Green,sf::Color(0,0,230),sf::Color::Yellow,sf::Color::Magenta,sf::Color::Cyan};
+    sf::Color colorOptions[NUMBER_OF_COLORS] = {sf::Color(230,230,230),sf::Color(255,140,0),sf::Color(230,0,0),sf::Color::Green,sf::Color(0,0,230),sf::Color::Yellow,sf::Color::Magenta,sf::Color::Cyan};
     //sf::CircleShape colorchoices[NUMBER_OF_COLORS];
     float colorRadius = 25;
     for(int i = 0; i < NUMBER_OF_COLORS; i++)

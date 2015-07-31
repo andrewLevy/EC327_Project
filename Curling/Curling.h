@@ -12,7 +12,7 @@ using namespace std;
 class Curling
 {
 public:
-    Curling(int newPlayType, int newPointsToWin, char newPointType, sf::Color newTeamAColor, sf::Color newTeamBColor, string newTeamAName, string newTeamBName);
+    Curling(int newPlayType, int newNumberToWin, char newScoringType, sf::Color newTeamAColor, sf::Color newTeamBColor, string newTeamAName, string newTeamBName);
      virtual ~Curling();
 
     void prepareStones(Stone stone_array[]);
@@ -32,35 +32,42 @@ public:
     int findPointsScored(int winner, Stone stone_array[], sf::CircleShape Target);
     int getPoints(Stone winning_team[], const float closest_opponent, sf::CircleShape target);
     int calculatePointsEarned(const int winner, Stone team_even[], Stone team_odd[], sf::CircleShape target);
-    void updateScoreboard(int winner, int points, sf::Text& team_A_score, sf::Text& team_B_score);
+    void updateScoreboard(int winner, int points, sf::Text& team_A_score, sf::Text& team_B_score,sf::Text& setNumber);
     string Winner();
+    bool isGameOver();
 
     bool checkPlay_Status(Stone stone_array[], int numberOfStones);
     bool inValid_Throw(Stone s);
 
     int getPlayType();
-    int getPointsToWin();
-    char getPointType();
+    int getNumberToWin();
+    char getScoringType();
     int getTeam_A_Points();
     int getTeam_B_Points();
     sf::Color getTeam_A_Color();
     sf::Color getTeam_B_Color();
     string getTeamAName();
     string getTeamBName();
+    int getTurnNumber();
+    int getCurrentSet();
 
     void updateTeam_A_Points(int points);
     void updateTeam_B_Points(int points);
+    void setTurnNumber(int newTurnNumber);
+    void setCurrentSet(int newCurrentSet);
 
 private:
     int playType;
-    int pointsToWin;
-    char PointType;
+    int numberToWin;
+    char scoringType;
     int team_A_points;
     int team_B_points;
     sf::Color team_A_color;
     sf::Color team_B_color;
     string team_A_name;
     string team_B_name;
+    int turnNumber;
+    int currentSet;
 
 };
 

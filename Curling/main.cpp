@@ -440,7 +440,7 @@ int main()
             }
 
             // Draw hints box or hints GUI link depending on position of mouse click
-            if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
+            if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && !game.checkPlay_Status(s_b, NUM_OF_STONES))
             {
                 // Only read in one click
                 while(sf::Mouse::isButtonPressed(sf::Mouse::Left));

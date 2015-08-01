@@ -79,7 +79,7 @@ int main()
 
 
         // Below constants define the change in spin for every press of spin GUI
-        const float DEGREE_PER_TURN = 20;
+        const float DEGREE_PER_TURN = 10;
         const float TIME_PER_TURN = 10;
         const float FRAMES_PER_SECOND = 60;
         const float MIN_SPIN = DEGREE_PER_TURN * (PI / 180) / TIME_PER_TURN / FRAMES_PER_SECOND;
@@ -711,6 +711,7 @@ int main()
                 // If game is over, declare winner and then return to menu after pause
                 if(game.isGameOver())
                 {
+                    hintsOn = false;
                     if(game.getTeam_A_Points() > game.getTeam_B_Points())
                         winning_message.setString(game.getTeamAName() + " Wins!");
                     else if (game.getTeam_B_Points() > game.getTeam_A_Points())
@@ -757,8 +758,14 @@ int main()
     return EXIT_SUCCESS;
 }
 
+// "menu_launch" launches the introductory animation and provides GUIs that enable the user to adjust options for the upcoming Curling game including team names, colors, and scoring type.
+// The function returns an instance of the Curling game class that includes the settings chosen by the user.
 Curling menu_launch()
 {
+    // The variable menu_mode will determine what appears on the "menu" window.
+    //  - menu_mode = 'M': window will show introductory animation
+    //  - menu_mode = 'I': window will show options for "Play" mode
+    //  - menu_mode = 'T': window will show options for "Training" mode
     char menu_mode = 'M';
     int UI_pt_win = 1;
 
@@ -766,16 +773,13 @@ Curling menu_launch()
     sf::Time m2;
     sf::Clock menu_clock;
 
+    // The introductory animation and Curling game options will be displayed on the "menu" window
     sf::RenderWindow menu(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Menu");
 
     sf::Font font;
     font.loadFromFile("sansation.ttf");
-    //if (!font.loadFromFile("sansation.ttf"))
-    //{
-        //return EXIT_FAILURE; (unclear what i should return here)
-    //}
-    //create main menu text
 
+    // Load Curling image to be displayed in introductory animation
     sf::Texture introImage;
     introImage.loadFromFile("introImage_v2.png");
     sf::Sprite introImageSprite(introImage);
@@ -783,6 +787,7 @@ Curling menu_launch()
     introImageSprite.setOrigin(introImageSprite.getLocalBounds().width / 2, introImageSprite.getLocalBounds().height / 2);
     introImageSprite.setPosition(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 70);
 
+    // Create introductory game options
     sf::Text menu_list[3];
     menu_list[0].setString("Play");
     menu_list[1].setString("Train");
@@ -800,7 +805,7 @@ Curling menu_launch()
     menu_list[0].setPosition(menu_list[1].getPosition().x - menu_list[1].getLocalBounds().width / 2 - menu_list[0].getLocalBounds().width /2 - 100,menu_list[1].getPosition().y);
     menu_list[2].setPosition(menu_list[1].getPosition().x + menu_list[1].getLocalBounds().width / 2 + menu_list[2].getLocalBounds().width /2 + 100,menu_list[1].getPosition().y);
 
-    //create input menu text
+    // Set boolean to determine whether initial colors have changed
     bool userSettingsChanged = false;
 
     // Initialize objects required for user name entry
@@ -824,12 +829,27 @@ Curling menu_launch()
     int pointsSelect = 0;
     char scoreType;
 
-    sf::Texture goPlay_pic;
+    // Create "Play Now" button.  Button will be used to begin Curling game with specified options.
+    sf::Text playNowText;
+    playNowText.setString("Play");
+    playNowText.setFont(font);
+    playNowText.setCharacterSize(30);
+    playNowText.setColor(sf::Color::Black);
+    playNowText.setOrigin(playNowText.getLocalBounds().width / 2, playNowText.getLocalBounds().height / 2);
+    playNowText.setPosition(WINDOW_WIDTH - playNowText.getLocalBounds().width / 2 - 110, WINDOW_HEIGHT - playNowText.getLocalBounds().height / 2 - 100);
+
+    // Create "Back" button.  Button will be used to return to main menu from options window.
+    sf::Text backButton;
+    backButton.setString("Back");
+    backButton.setFont(font);
+    backButton.setCharacterSize(30);
+    backButton.setColor(sf::Color::Black);
+    backButton.setOrigin(backButton.getLocalBounds().width / 2, backButton.getLocalBounds().height / 2);
+    backButton.setPosition(playNowText.getPosition().x - playNowText.getLocalBounds().width / 2 - 175,playNowText.getPosition().y);
+
+    /*sf::Texture goPlay_pic;
     goPlay_pic.loadFromFile("Play_now_button.png");
-    //if (!goPlay_pic.loadFromFile("Play_now_button.png"))
-    //{
-    //  return EXIT_FAILURE;
-    //}
+
     sf::Sprite goPlay(goPlay_pic);
     goPlay.setPosition(800,500);
 
@@ -840,7 +860,7 @@ Curling menu_launch()
     //  return EXIT_FAILURE;
     //}
     sf::Sprite backToMenu(backToMenu_pic);
-    backToMenu.setPosition(1100,10);
+    backToMenu.setPosition(1100,10);*/
 
     sf::Clock introClock;
     sf::Time introTime;
@@ -862,13 +882,17 @@ Curling menu_launch()
         }
         menu.clear(sf::Color(255,255,255));
 
+        // If "menu_mode" = "M", draw introductory animation and play type options
         if (menu_mode == 'M')
         {
 
+            // Draw curling image
             menu.draw(introImageSprite);
 
+            // Set default scoring type to number of ends played
             scoreType = 'E';
 
+            // Create animation
             if(introClock.getElapsedTime().asSeconds() > 0.5)
             {
                 if(introClock.getElapsedTime().asSeconds() > 0.5)
@@ -904,8 +928,11 @@ Curling menu_launch()
             else
                 menu_list[2].setColor(sf::Color::Black);
 
+
+            // If mouse clicked and clicked GUI take appropriate action
             if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
             {
+                // Only read in one click
                 while(sf::Mouse::isButtonPressed(sf::Mouse::Left));
 
                 // Find where mouse clikced
@@ -914,7 +941,7 @@ Curling menu_launch()
                 currentMouseClickPosition.x = currentMouseClickPosition_int.x;
                 currentMouseClickPosition.y = currentMouseClickPosition_int.y;
 
-                // If "Play", "Train", or "Quit" selected change mode accordingly
+                // If "Play", "Train", or "Quit" selected change "menu_mode" accordingly
                 if(playBox.contains(currentMouseClickPosition))
                     menu_mode = 'I';
                 else if(trainingBox.contains(currentMouseClickPosition))
@@ -928,6 +955,7 @@ Curling menu_launch()
                 }
 
             }
+            // User can also quit program my pressing "Q"
             else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
             {
                 Program_on = false;
@@ -938,22 +966,34 @@ Curling menu_launch()
             menu.display();
 
         }
+        // Show game options if user clicks on "Play" or "Train" mode
         else if (menu_mode == 'I' || menu_mode == 'T')
         {
             int numberOfTeams = (menu_mode == 'I' ? 2 : 1);
+            if(numberOfTeams == 1)
+                playNowText.setString("Train");
 
+            // "options_launch" function sets labels, color choices, stone previews, and textboxes on options window
             options_launch(menu,font,numberOfTeams,colorChoices,stoneColorPreviews,textEntryCells,userNames,teamAName,teamBName,scoreButtons,pointsSelect,scoreCells,scoreType);
             UI_pt_win = pointsSelect+1;
+
+            // Create flag if "tab" button pressed
+            // User will be able to move from Team A textbox to Team B textbox by pressing "tab" but not from Team B to Team A
             bool tabFlag;
 
+            // Get the global bounds for the two username textboxes to later determine if user clicks into
             sf::FloatRect nameExtryBox1 = textEntryCells[0].getGlobalBounds();
             sf::FloatRect nameEntryBox2 = textEntryCells[1].getGlobalBounds();
+
+            // Set color of preview stones to gray and orange
             if(!userSettingsChanged)
             {
                 stoneColorPreviews[0].setFillColor(sf::Color(230,230,230));
                 stoneColorPreviews[1].setFillColor(sf::Color(255,140,0));
             }
 
+            // Create text notifying user the team color that can be adjusted
+            // The adjustable team color will alternate every time a color options is clicked
             sf::Text selectColorInstruction;
             selectColorInstruction.setString(C_instruct);
             selectColorInstruction.setFont(font);
@@ -962,8 +1002,10 @@ Curling menu_launch()
             selectColorInstruction.setPosition(1000,230);
             menu.draw(selectColorInstruction);
 
-            menu.draw(goPlay);
-            menu.draw(backToMenu);
+            // Draw "Play" and "Back" buttons
+            menu.draw(playNowText);
+            menu.draw(backButton);
+
             // Draw stone color previews
             for(int i = 0; i < 2; i++)
                 menu.draw(stoneColorPreviews[i]);
@@ -971,7 +1013,23 @@ Curling menu_launch()
                 menu.draw(colorChoices[i]);
             menu.display();
 
-            // If mouse is clicked, store click position and assing new color if color clicked
+            // If mouse cursor is above "Play" or "Back" buttons highlight the button
+            sf::Vector2i currentMousePosition_int_2(sf::Mouse::getPosition(menu));
+            sf::Vector2f currentMousePosition_2;
+            currentMousePosition_2.x = currentMousePosition_int_2.x;
+            currentMousePosition_2.y = currentMousePosition_int_2.y;
+
+            if(playNowText.getGlobalBounds().contains(currentMousePosition_2))
+                playNowText.setColor(sf::Color::Green);
+            else
+                playNowText.setColor(sf::Color::Black);
+
+            if(backButton.getGlobalBounds().contains(currentMousePosition_2))
+                backButton.setColor(sf::Color::Red);
+            else
+                backButton.setColor(sf::Color::Black);
+
+            // If mouse is clicked on GUI take appropriate action
             if(sf::Mouse::isButtonPressed(sf::Mouse::Left))
             {
                 // Only read in one click
@@ -982,6 +1040,7 @@ Curling menu_launch()
                 mouseClickPosition.x = mouseClickPosition_int.x;
                 mouseClickPosition.y = mouseClickPosition_int.y;
 
+                // If color option clicked on, set the current adjustable team color to the chosen color
                 if(isColorPressed(mouseClickPosition,colorChoices,selectedColor))
                 {
                     userSettingsChanged = true;
@@ -997,12 +1056,13 @@ Curling menu_launch()
                         mouseClickCounter++;
                     }
                 }
-                //check score type button click
+                // Update score type if necessary
                 else if(scoreCells[0].getGlobalBounds().contains(mouseClickPosition))
                     scoreType = 'E';
                 else if(scoreCells[1].getGlobalBounds().contains(mouseClickPosition))
                     scoreType = 'P';
-                //Check for value button click
+
+                // Check if user selected a number of points/ends to play
                 for(int i = 0; i < 8; i++)
                 {
                     if(getDistance(mouseClickPosition,scoreButtons[i].getPosition()) <= scoreButtons[i].getRadius())
@@ -1011,7 +1071,7 @@ Curling menu_launch()
                     }
                 }
 
-                // Boolean flag to enable user to tab from first textbox to second textbox
+                // Boolean flag to enable user to tab from first textbox to second textbox.  Flag resets every click.
                 tabFlag = false;
             }
 
@@ -1021,6 +1081,7 @@ Curling menu_launch()
                 if(nameExtryBox1.contains(mouseClickPosition) && !tabFlag)
                 {
                     selectedTextBox = 0;
+                    // Remove pre-filled insructions if necessary
                     if (teamAName == "Enter Team A Name")
                     {
                         teamAName = "";
@@ -1035,6 +1096,7 @@ Curling menu_launch()
                     }
                 }
 
+                // If user has clicked on team name textboxes, look for text entered
                 while (menu.pollEvent(event))
                 {
                     if(event.type == sf::Event::TextEntered)
@@ -1047,6 +1109,7 @@ Curling menu_launch()
 
                             if(selectedTextBox == 0)
                             {
+                                // Take appropriate action for delete, tab, enter, and other keys
                                 if(event.text.unicode == 8 && teamAName.size() > 0)
                                     teamAName.erase(teamAName.size() - 1,1);
                                 else if(event.text.unicode != 8 && event.text.unicode != 9 && teamAName.size() < 10)
@@ -1064,8 +1127,8 @@ Curling menu_launch()
                 }
             }
 
-            //if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
-            if (goPlay.getGlobalBounds().contains(mouseClickPosition))
+            // If user clicks "Play" return Curling instance with user specified option and begin curling game
+            if (playNowText.getGlobalBounds().contains(mouseClickPosition))
             {
                 menu.close();
                 if(numberOfTeams == 2)
@@ -1073,20 +1136,22 @@ Curling menu_launch()
                 else
                     return Curling(0,UI_pt_win,scoreType,stoneColorPreviews[0].getFillColor(),stoneColorPreviews[1].getFillColor(),teamAName,teamBName);
             }
-            if (backToMenu.getGlobalBounds().contains(mouseClickPosition))
+
+            // If user clicks "Back" return to main menu
+            if (backButton.getGlobalBounds().contains(mouseClickPosition))
             {
                 menu.close();
                 return Curling(2,UI_pt_win,'M',sf::Color::Green,sf::Color::Green,"Team A", "Team B");
             }
         }
 
-        //menu.display();
         sf::sleep(m1);
         m2=menu_clock.getElapsedTime();
     }
     return Curling(3,UI_pt_win,'Q',sf::Color::Green,sf::Color::Green,"Team A", "Team B");
 }
 
+// Function sets the labels, color options, team name textboxes, stone previews in option windows
 void options_launch(sf::RenderWindow& menu, sf::Font font, int numberOfTeams, sf::CircleShape colorChoices[], Stone stoneColorPreviews[],sf::RectangleShape textEntryCells[], sf::Text userNames[], string newTeamAName, string newTeamBName, sf::CircleShape scoreButtons[], int pointsSelect, sf::RectangleShape scoreCells[], char& scoreType)
 {
     // Add text labels to page
@@ -1152,7 +1217,6 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int numberOfTeams, sf
     // Display color choices
     const int NUMBER_OF_COLORS = 8;
     sf::Color colorOptions[NUMBER_OF_COLORS] = {sf::Color(230,230,230),sf::Color(255,140,0),sf::Color(230,0,0),sf::Color::Green,sf::Color(0,0,230),sf::Color::Yellow,sf::Color::Magenta,sf::Color::Cyan};
-    //sf::CircleShape colorchoices[NUMBER_OF_COLORS];
     float colorRadius = 25;
     for(int i = 0; i < NUMBER_OF_COLORS; i++)
     {
@@ -1162,7 +1226,6 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int numberOfTeams, sf
         colorChoices[i].setOutlineColor(sf::Color::Black);
         colorChoices[i].setOutlineThickness(-1);
         colorChoices[i].setPosition(1000 + i % 4 * 2 * (colorChoices[i].getRadius() + 5),300 + i / 4 * 2 * (colorChoices[i].getRadius() + 5));
-        //menu.draw(colorChoices[i]);
     }
 
 
@@ -1180,7 +1243,7 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int numberOfTeams, sf
         menu.draw(stonePreviews[i]);
     }
 
-    // Set color preview stones with default colors
+    // Set color preview stones
     sf::Vector2f stonePositions[2] = {sf::Vector2f(350,310),sf::Vector2f(600,310)};
     float stonePreviewRadius = 40;
     for(int i = 0; i < numberOfTeams; i++)
@@ -1191,7 +1254,7 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int numberOfTeams, sf
         stoneColorPreviews[i].setPosition(stonePositions[i]);
     }
 
-    //Scoring options
+    // Set Scoring options and labels
     if(numberOfTeams == 2)
     {
         sf::Text scoreTextLabels[2];
@@ -1206,10 +1269,6 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int numberOfTeams, sf
             scoreCells[s].setFillColor(sf::Color(160,160,160));
             scoreCells[s].setPosition(450+(s*100),475);
             scoreCells[s].setOutlineThickness(-2);
-            /*if (scoreType == 'P')
-                scoreCells[1].setOutlineThickness(-10);
-            else
-                scoreCells[0].setOutlineThickness(-10);*/
             if (scoreType == 'P')
                 scoreCells[1].setFillColor(sf::Color::Black);
             else
@@ -1222,9 +1281,9 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int numberOfTeams, sf
             menu.draw(scoreCells[s]);
             menu.draw(scoreTextLabels[s]);
         }
+
         sf::Text scoreButtonValues[8];
         float buttonRadius = 25.0;
-        //int valueSelect = 0;
         int valueSelect = pointsSelect;
         for (int b=0; b<8; b++)
         {
@@ -1262,11 +1321,14 @@ void options_launch(sf::RenderWindow& menu, sf::Font font, int numberOfTeams, sf
 
 }
 
+// Finds distance between two position vectors
 float getDistance(sf::Vector2f vector1, sf::Vector2f vector2)
 {
     return sqrt((vector2.x - vector1.x) * (vector2.x - vector1.x) + (vector2.y - vector1.y) * (vector2.y - vector1.y));
 }
 
+// Check whether the user clikced on a color option by calculating the distance between the click position and the color options
+// If color option clicked, assigns color to the "selectedColor" variable that was passed by reference.
 bool isColorPressed(sf::Vector2f mouseClickPosition, sf::CircleShape colorChoices[], sf::Color& selectedColor)
 {
     for(int i = 0; i < 8; i++)

@@ -2,13 +2,14 @@
 
 // The following program simulates a Curling game.  The program has two modes: (i) a "one-on-one" two player game and (ii) a "training" single user game.
 // The programs uses two custom classes: (a) Stone and (b) Curling
-//      (a) Stone Class
-//       - The Stone class creates "Stones" that extend the "sf::CircleShape" class to include a speed, direction, spin, and friction among other data fields.
-//       - The Stone class incorporates various functions including methods to search for collisions with walls and with other Stones and then react appropriately.
+//      (a) Stone
+//       - The Stone class creates "Stones" that extend the "sf::CircleShape" class to include speed, direction, spin, and friction among other data fields.
+//       - The Stone class incorporates various functions including methods to search for collisions with walls and other Stones and then react appropriately.
 //      (b) Curling
-//       - The Curling class creates instances of curling games and includes several data fields that ares specific to each curling game
-//         such as game mode, team names, current turn, and team points among others.
-//       - The Curling class includes various functions including drawing the scoreboard and rink and determining the winner of each end and game.
+//       - The Curling class creates instances of curling games and includes several data fields that are specific to each curling game
+//         such as game mode, team names, current turn, and team points, among others.
+//       - The Curling class includes various functions including proving initial positioning/coloring to stones, drawing the scoreboard and rink,
+//         and determining the winner of each end and game.
 
 #include <SFML/Graphics.hpp>
 #include <stdlib.h>

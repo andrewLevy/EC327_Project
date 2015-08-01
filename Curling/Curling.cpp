@@ -14,9 +14,10 @@ const int BOARD_HEIGHT = 165;
 const sf::Vector2f zoomButtonPosition(180,375);
 const float zoomRatio = 2.5;
 
+// Curling constructor
+// Inputs include (i) Play Type (Play or Train), (ii) Scoring Metrics, (iii) Team Colors, (iv) Team Names
 Curling::Curling(int newPlayType, int newNumberToWin, char newScoringType, sf::Color newTeamAColor, sf::Color newTeamBColor, string newTeamAName, string newTeamBName)
 {
-    // Data field to specity game type includes practice (playType = 0) or One-on-One (playType = 1)
     playType = newPlayType;
     numberToWin = newNumberToWin;
     scoringType = newScoringType;
@@ -42,6 +43,8 @@ Curling::~Curling()
     //dtor
 }
 
+// Sets intial positions and fill colors.  Positions and coloring depends on play type (play or train)
+// If a one-on-one game, even-numbered stones belong to Team A while odd-numbered stone belong to Team B
 void Curling::prepareStones(Stone stone_array[])
 {
     if(playType == 0)
@@ -74,6 +77,7 @@ void Curling::prepareStones(Stone stone_array[])
     return;
 }
 
+// Function draws the rink including the House, boundary lines, initial stone placement outlines, play type label,
 void Curling::drawRink(sf::CircleShape Targets[], sf::RectangleShape lines[], sf::CircleShape resting_Spots[], Stone s_b[], int NUM_OF_STONES, sf::Text& gameTypeLabel, sf::Font& font)
 {
     // Create House
@@ -118,11 +122,10 @@ void Curling::drawRink(sf::CircleShape Targets[], sf::RectangleShape lines[], sf
     else
         gameTypeLabel.setString("One-on-One");
     gameTypeLabel.setCharacterSize(20);
-    //gameTypeLabel.setOrigin(gameTypeLabel.getLocalBounds().width,gameTypeLabel.getLocalBounds().height);
-    //gameTypeLabel.setPosition(1305 - gameTypeLabel.getLocalBounds().width,580 - gameTypeLabel.getLocalBounds().height);
     gameTypeLabel.setPosition(1275 / 2.0 - gameTypeLabel.getLocalBounds().width / 2,5);
 }
 
+// Function draws zoomed in window of House including the House and boundary lines
 void Curling::drawHouseZoom(sf::CircleShape houseTargets[], sf::RectangleShape houseLines[])
 {
     // Create House
@@ -150,22 +153,15 @@ void Curling::drawHouseZoom(sf::CircleShape houseTargets[], sf::RectangleShape h
         houseLines[i].setSize(lineSize[i]);
         houseLines[i].setFillColor(sf::Color::Black);
     }
-
-
-
-    /*houseBoundary.setPointCount(4);
-    houseBoundary.setRotation(45);
-    houseBoundary.setRadius(sqrt(2 * houseTargets[0].getRadius() * houseTargets[0].getRadius()));
-    houseBoundary.setOrigin(houseBoundary.getRadius(), houseBoundary.getRadius());
-    houseBoundary.setPosition(zoomButtonPosition);
-    houseBoundary.setOutlineColor(sf::Color::Black);
-    houseBoundary.setOutlineThickness(0.5);*/
 }
 
+// Function creates a zoomed in view of the initial user inputs
 void Curling::drawUserInputsZoom(sf::RectangleShape boundaryLines[], const Stone currentStone, Stone& zoomStone, const sf::Sprite arrow, sf::Sprite& arrowZoom, sf::RectangleShape zoomBoundary[])
 {
-    // Determine positioning for boundary lines in zoom of user inputs
+    // Magnification multiple
     float userInputsZoom = 2.0;
+
+    // Determine positioning for boundary lines in zoom of user inputs
     sf::Vector2f Lpos[4] = {sf::Vector2f(1110 - 200,375),sf::Vector2f(1110 - 2 * userInputsZoom,375 - BOARD_HEIGHT / 2 * userInputsZoom),sf::Vector2f(1110 - 200,375 + 15 * userInputsZoom),sf::Vector2f(1110 - 200,375 - 15 * userInputsZoom)};
     sf::Vector2f Lsize[4] = {sf::Vector2f(200,1 * userInputsZoom),sf::Vector2f(4 * userInputsZoom,BOARD_HEIGHT * userInputsZoom),sf::Vector2f(200,.5 * userInputsZoom),sf::Vector2f(200,.5 * userInputsZoom)};
     for(int i = 0; i < 4; i++)
@@ -200,79 +196,7 @@ void Curling::drawUserInputsZoom(sf::RectangleShape boundaryLines[], const Stone
 
 }
 
-void Curling::createHintsBox(sf::RectangleShape& hintsBox,sf::Text& hintsText,sf::RectangleShape& hintsGUIBox,sf::Text& hintsGUIText,sf::Font font, sf::Vector2f boxSize)
-{
-    // Set settings for hints textbox
-    //sf::Vector2f hintsTextSize(sb[0].getLocalBounds().width + sb[1].getLocalBounds().width + sb[2].getLocalBounds().width, 245);
-    hintsBox.setSize(boxSize);
-    hintsBox.setOrigin(hintsBox.getLocalBounds().width / 2, hintsBox.getLocalBounds().height / 2);
-    hintsBox.setPosition(BOARD_WIDTH / 2, 420);
-    hintsBox.setOutlineColor(sf::Color::Black);
-    hintsBox.setOutlineThickness(-1);
-
-    //string hints("Tips: \n\n - Adjust speed with left/right arrows \n\n - Adjust direction with up/down arrows\n\n - Adjust curvature down/up with \n'F'/'G' keys \n\n - Sweep individual stone by clicking \nstone on top board");
-    //hintsText.setString(hints);
-    hintsText.setFont(font);
-    hintsText.setCharacterSize(18);
-    hintsText.setColor(sf::Color::Black);
-    hintsText.setOrigin(hintsText.getLocalBounds().width / 2,hintsText.getLocalBounds().height / 2);
-    hintsText.setPosition(hintsBox.getPosition().x - hintsBox.getLocalBounds().width / 2 + hintsText.getLocalBounds().width / 2 + 10,hintsBox.getPosition().y);
-
-    // Set settings for hints GUI link
-    hintsGUIBox.setSize(sf::Vector2f(75,35));
-    hintsGUIBox.setPosition(hintsBox.getPosition().x - hintsBox.getLocalBounds().width / 2, hintsBox.getPosition().y - hintsBox.getLocalBounds().height / 2);
-    hintsGUIBox.setOutlineColor(sf::Color::Black);
-    hintsGUIBox.setOutlineThickness(-1);
-
-    //hintsGUIText.setString("  + Tips");
-    hintsGUIText.setFont(font);
-    hintsGUIText.setCharacterSize(20);
-    hintsGUIText.setColor(sf::Color::Black);
-    hintsGUIText.setPosition(hintsGUIBox.getPosition().x, hintsGUIBox.getPosition().y + 4);
-}
-
-void Curling::drawScoreboard(sf::RectangleShape sb[], sf::Text sb_Text[], sf::Vector2f sb_size, sf::Font font)
-{
-    sb[0].setFillColor(sf::Color::Green);
-    sb[1].setFillColor(sf::Color::Black);
-    sb[2].setFillColor(sf::Color::Yellow);
-    sb_Text[0].setString("Score");
-    sb_Text[1].setString("Set");
-    sb_Text[2].setString("Score");
-
-    for (int b=0; b<6; b++)
-    {
-        if (b<3)
-        {
-            sb[b].setSize(sb_size);
-            sb[b].setOrigin(sb_size.x/2,sb_size.y/2);
-            sb[b].setOutlineColor(sf::Color::Black);
-            sb[b].setOutlineThickness(-2.0);
-            sb[b].setPosition(BOARD_WIDTH/2+(b-1)*sb_size.x,195);
-            sb_Text[b].setFont(font);
-            sb_Text[b].setOrigin(sb_Text[b].getLocalBounds().width/2,sb_Text[b].getLocalBounds().height/2);
-            sb_Text[b].setCharacterSize(30);
-            sb_Text[b].setPosition(sb[b].getPosition());
-            sb_Text[b].setColor(sf::Color::Black);
-        }
-        else
-        {
-            sb[b].setSize(sb_size);
-            sb[b].setOrigin(sb_size.x/2,sb_size.y/2);
-            sb[b].setOutlineColor(sf::Color::Black);
-            sb[b].setOutlineThickness(-2.0);
-            sb[b].setPosition(BOARD_WIDTH/2+(b-4)*sb_size.x,245);
-            sb_Text[b].setFont(font);
-            sb_Text[b].setOrigin(sb_Text[b].getLocalBounds().width/2,sb_Text[b].getCharacterSize()/2);
-            sb_Text[b].setCharacterSize(20);
-            sb_Text[b].setPosition(sb[b].getPosition());
-            sb_Text[b].setString("0");
-            sb_Text[b].setColor(sf::Color::Black);
-        }
-    }
-    sb_Text[1].setColor(sf::Color::White);
-}
-
+// Function return distance between two position vectors
 float Curling::getDistance(sf::Vector2f vector1, sf::Vector2f vector2)
 {
     float x_difference = vector2.x - vector1.x;
@@ -281,19 +205,24 @@ float Curling::getDistance(sf::Vector2f vector1, sf::Vector2f vector2)
     return sqrt(x_difference * x_difference + y_difference * y_difference);
 }
 
+// Function return stone in array closest to "button"
 int Curling::findClosestStone(Stone stone_array[], int NUM_OF_STONES)
 {
     // Add closest stone(s) to vector
     sf::Vector2f buttonPosition(180,BOARD_HEIGHT / 2);
     float closest_distance = getDistance(stone_array[0].getPosition(), buttonPosition);
+
     vector<int> closestStones;
     if(stone_array[0].getStatus())
         closestStones.push_back(0);
+    // Enter "-1" in Stone is not on rink because has collided with wall or was invalid
     else
         closestStones.push_back(-1);
 
+    // Loop through stone array and find stone(s) closest to "button"
     for(int i = 1; i < NUM_OF_STONES; i++)
     {
+        // Only include stones that are in play (i.e. stones have been played and are on rink)
         if(stone_array[i].getStatus())
         {
             float next_distance = getDistance(stone_array[i].getPosition(), buttonPosition);
@@ -342,6 +271,7 @@ int Curling::findClosestStone(Stone stone_array[], int NUM_OF_STONES)
     return closestStones[0];
 }
 
+// Function determines which stone to sweep by finding closest moving stone to mouse click location
 int Curling::getClostest_movingStone(Stone s[], sf::Vector2i mouse_loc, const int N)
 {
     int dist = 50000;
@@ -349,6 +279,7 @@ int Curling::getClostest_movingStone(Stone s[], sf::Vector2i mouse_loc, const in
     int temp_dist;
     for (int f=0; f<N; f++)
     {
+        // Only includes stones that are still moving
         if (s[f].getSpeed() != 0)
         {
             temp_dist = sqrt((s[f].getPosition().x-mouse_loc.x)*(s[f].getPosition().x-mouse_loc.x) + (s[f].getPosition().y-mouse_loc.y)*(s[f].getPosition().y-mouse_loc.y));
@@ -362,6 +293,7 @@ int Curling::getClostest_movingStone(Stone s[], sf::Vector2i mouse_loc, const in
     return dist_i;
 }
 
+// Functons determines whether a stone lies in the House (i.e. distance from the button < radius of largest circle in House)
 bool Curling::inHouse(Stone stone1, sf::CircleShape target)
 {
     if(getDistance(stone1.getPosition(), target.getPosition()) - stone1.getRadius() <= target.getRadius())
@@ -370,6 +302,7 @@ bool Curling::inHouse(Stone stone1, sf::CircleShape target)
         return false;
 }
 
+// Function adds stones in House to zoom view of House
 void Curling::updateHouseZoom(const Stone stone_array[], Stone houseStones[], int numberOfStones, sf::CircleShape Target)
 {
     sf::Vector2f positionFromButton;
@@ -381,7 +314,7 @@ void Curling::updateHouseZoom(const Stone stone_array[], Stone houseStones[], in
             positionFromButton.x = stone_array[i].getPosition().x - Target.getPosition().x;
             positionFromButton.y = stone_array[i].getPosition().y - Target.getPosition().y;
 
-            // Change properties of stones to put in zoom of House
+            // Update properties of stone to account for magnification multiple
             houseStones[i].setRadius(zoomRatio * stone_array[i].getRadius());
             houseStones[i].setOrigin(houseStones[i].getRadius(), houseStones[i].getRadius());
             houseStones[i].setOutlineThickness(houseStones[i].getOutlineThickness() * zoomRatio);
@@ -400,14 +333,16 @@ void Curling::updateHouseZoom(const Stone stone_array[], Stone houseStones[], in
     }
 }
 
+// Function places a triangle marker over the closest stone to the "button"
 void Curling::markClosestStone(sf::CircleShape& triangle, int closestStoneIndex, Stone stone_array[])
 {
     triangle.setOrigin(triangle.getRadius(), triangle.getRadius());
     triangle.rotate(180);
 
-    // Set color of market to team color of closest stone
+    // Set color of marker to team color of closest stone
     if(getPlayType() == 0)
         triangle.setFillColor(getTeam_A_Color());
+    // Team A has even-numbered stones and Team B has odd-numbered stones
     else if(closestStoneIndex % 2 == 0)
         triangle.setFillColor(getTeam_A_Color());
     else
@@ -417,30 +352,30 @@ void Curling::markClosestStone(sf::CircleShape& triangle, int closestStoneIndex,
     triangle.setPosition(stone_array[closestStoneIndex].getPosition().x, stone_array[closestStoneIndex].getPosition().y - stone_array[closestStoneIndex].getRadius() - triangle.getRadius() - triangle.getRadius() / 2.0);
 }
 
+// Function is one of several to help determine number of points scored in an end after the end is complete.  Function divides stone array into two teams.
 int Curling::findPointsScored(int winner, Stone stone_array[], sf::CircleShape Target)
 {
     // Split up teams to find number of points earned
     Stone team_even[8];
     Stone team_odd[8];
-    //int evenCount = 0;
-    //int oddCount = 0;
+
     for(int i = 0; i < 16; i++)
     {
         if(i % 2 == 0)
         {
             team_even[i / 2] = stone_array[i];
-            //evenCount++;
         }
         else
         {
             team_odd[i / 2] = stone_array[i];
-            //oddCount++;
         }
     }
 
     return calculatePointsEarned(winner,team_even, team_odd, Target);
 }
 
+// Function is one of several to help calculate the number of points won in an end.  Function find the number of stones from the winning team
+// that are in the House and lie closer to the "button" than the the losing team's closest stone.
 int Curling::getPoints(Stone winning_team[], const float closest_opponent, sf::CircleShape target)
 {
     int points = 0;
@@ -454,6 +389,7 @@ int Curling::getPoints(Stone winning_team[], const float closest_opponent, sf::C
     return points;
 }
 
+// Function is one of several to help calcuate the number of points won in an end.  Function finds closest stone to the "button" from the losing team
 int Curling::calculatePointsEarned(const int winner, Stone team_even[], Stone team_odd[], sf::CircleShape target)
 {
     int winning_team;
@@ -477,6 +413,7 @@ int Curling::calculatePointsEarned(const int winner, Stone team_even[], Stone te
         return getPoints(team_odd, closest_opponent, target);
 }
 
+// Function updates the scoreboard by updating point totals for the winning team of the previous set and increases the current set number.
 void Curling::updateScoreboard(int winner, int points, sf::Text& team_A_score, sf::Text& team_B_score,sf::Text& setNumber)
 {
     if(winner % 2 == 0)
@@ -492,6 +429,7 @@ void Curling::updateScoreboard(int winner, int points, sf::Text& team_A_score, s
     setNumber.setString(to_string(currentSet));
 }
 
+// Function checks whether a stone is currently is plan by checking stone speeds
 bool Curling::checkPlay_Status(Stone stone_array[], int numberOfStones)
 {
     for (int i = 0; i < numberOfStones; i++)
@@ -504,6 +442,7 @@ bool Curling::checkPlay_Status(Stone stone_array[], int numberOfStones)
     return false;
 }
 
+// Function checks whether a stone delivery was invalid
 bool Curling::inValid_Throw(Stone s)
 {
     if (s.getPosition().x > 390 && s.getPosition().x < 1110)
@@ -588,22 +527,8 @@ void Curling::setCurrentSet(int newCurrentSet)
     currentSet = newCurrentSet;
 }
 
-string Curling::Winner()
-{
-    if (getTeam_A_Points() >= getNumberToWin())
-    {
-        return "A";
-    }
-    else if (getTeam_B_Points() >= getNumberToWin())
-    {
-        return "B";
-    }
-    else
-    {
-        return "None";
-    }
-}
-
+// Function determines whether the game is over (i.e., a team's point totals are >= the number of points to
+// win or the current set number is > the number of sets to be played)
 bool Curling::isGameOver()
 {
     if(playType == 1 && scoringType == 'E' && currentSet > numberToWin)

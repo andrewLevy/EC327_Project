@@ -80,7 +80,7 @@ int main()
 
 
         // Below constants define the change in spin for every press of spin GUI
-        const float DEGREE_PER_TURN = 10;
+        const float DEGREE_PER_TURN = 15;
         const float TIME_PER_TURN = 10;
         const float FRAMES_PER_SECOND = 60;
         const float MIN_SPIN = DEGREE_PER_TURN * (PI / 180) / TIME_PER_TURN / FRAMES_PER_SECOND;

@@ -8,26 +8,8 @@
 
 using namespace std;
 
-//int Stone::NumofStones = 0;
-//int evenNumberStones = 0;
-//int oddNumberStones = 0;
-
-float dot_product(sf::Vector2f v1, sf::Vector2f v2)
-{
-    return (v1.x*v2.x+v1.y*v2.y);
-}
-
-float norm_2(sf::Vector2f v)
-{
-    return v.x*v.x + v.y*v.y;
-}
-
-float randMToN(float M, float N)
-{
-    return M + (rand() / ( RAND_MAX / (N-M) ) ) ;
-}
-
-
+// Stone Constructor
+// Stone Constructor initiliazes the radius, origin, colors, speed, and directon
 Stone::Stone()
 {
     setRadius(radius);
@@ -37,20 +19,6 @@ Stone::Stone()
 
     speed = 0;
     direction = 0;
-
-
-    /*
-    if(NumofStones % 2 == 0)
-    {
-        setFillColor(sf::Color::Green);
-        setPosition(1125 + NumofStones / 2 * (2*radius + 1),15);
-    }
-    else
-    {
-        setFillColor(sf::Color::Yellow);
-        setPosition(1125 + NumofStones / 2 * (2*radius + 1),150);
-    }*/
-    //NumofStones++;
 }
 
 
@@ -59,92 +27,15 @@ Stone::~Stone()
     //dtor
 }
 
-float Stone::getDistance(Stone s_o)
-{
-    x_dist = getPosition().x - s_o.getPosition().x;
-    y_dist = getPosition().y - s_o.getPosition().y;
-    tot_dist = sqrt((x_dist*x_dist)+(y_dist*y_dist));
 
-    return tot_dist;
-}
-
-bool Stone::isWithinWindow(sf::Vector2u ws)
+// Move the stone by its velocity
+void Stone::makeMove(float step)
 {
-    pos = this->getPosition();
-    if ((pos.x+radius<0 || pos.x-radius > ws.x))
-    {
-        return false;
-    }
-    if ((pos.y+radius < 0 || pos.y-radius > ws.y))
-    {
-        return false;
-    }
-    return true;
-}
-void Stone::setFriction(float f)
-{
-    friction = f;
-}
-
-void Stone::setSpin(float s)
-{
-    spin = s;
-}
-
-void Stone::setInitialSpeed(float e)
-{
-    speed = e;
-}
-
-void Stone::setSpeed()
-{
-    if (speed - friction > 0)
-    {
-        speed -= friction;
-    }
-    else
-    {
-        speed = 0;
-    }
-}
-
-float Stone::getSpeed()
-{
-    return speed;
-}
-
-void Stone::setInitialDirection(float d)
-{
-    direction = d;
-}
-
-void Stone::setDirection()
-{
-    direction += spin;;
+    move(v.x/step,v.y/step);
 }
 
 
-float Stone::getDirection()
-{
-    return direction;
-}
-
-float Stone::getSpin()
-{
-    return spin;
-}
-
-/*int Stone::getNumberofStones()
-{
-    return Stone::NumofStones;
-}*/
-
-void Stone::setVelocity()
-{
-    v.x= speed * cos(direction);
-    v.y= speed * sin(direction);
-}
-
+// Function that updates stone's status if it is in play (moving)
 void Stone::changeStatus()
 {
     if(inPlay == false)
@@ -153,91 +44,12 @@ void Stone::changeStatus()
         inPlay = false;
 }
 
-sf::Vector2f Stone::getVelocity()
-{
-    return v;
-}
-
-
-void Stone::makeMove(float step)
-{
-    move(v.x/step,v.y/step);
-}
-
-bool Stone::checkWallCollision(sf::Vector2u ws)
-{
-    pos = getPosition();
-    if (((pos.x - radius) <= 0 || (pos.x + radius) >= ws.x))
-    {
-        return true;
-    }
-    if (((pos.y - radius) <= 0 || (pos.y + radius) >= ws.y - 4))
-    {
-        return true;
-    }
-    return false;
-}
-
-
-bool Stone::checkStoneCollision(Stone s_o)
-{
-    if(this->getDistance(s_o) < 2*radius)
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
-/*void Stone::setVelocity_s(sf::Vector2f scv, sf::Vector2f svp)
-{
-    v=v-(dot_product((v-scv),(this->getPosition()-svp))/(norm_2(this->getPosition()-svp)))*(this->getPosition()-svp);
-}*/
-
-/*void Stone::resetNumberofStones()
-{
-    Stone::NumofStones = 0;
-}*/
 
 bool Stone::getStatus()
 {
     return inPlay;
 }
 
-bool Stone::onRink(sf::Vector2u windowSize)
-{
-    float x_position = getPosition().x;
-    float y_position = getPosition().y;
-
-    if(x_position - radius <= 0 || x_position + radius >= windowSize.x)
-    {
-        //cout << "x position" << " " << x_position << endl;
-        return false;
-    }
-    else if (y_position - radius <= 0 || y_position + radius >= windowSize.y)
-    {
-        //cout << "y position" << " " << y_position << endl;
-        return false;
-    }
-    else
-        return true;
-}
-
-bool Stone::isWallCollision(Stone stone_array[], const int SIZE, int& collisionInfo, sf::Vector2u windowSize)
-{
-    for(int i = 0; i < SIZE; i++)
-    {
-        if(stone_array[i].getStatus() && !stone_array[i].onRink(windowSize))
-        {
-            collisionInfo = i;
-            //cout << "Stone number: " << collisionInfo << endl;
-            return true;
-        }
-    }
-    return false;
-}
 
 // Check if collision has occurred among specified array of stones
 bool Stone::isCollision(Stone stone_array[], const int SIZE, int collisionStones[], sf::Vector2u windowSize)
@@ -256,13 +68,14 @@ bool Stone::isCollision(Stone stone_array[], const int SIZE, int collisionStones
                     collisionStones[1] = j;
                     return true;
                 }
-
             }
         }
     }
     return false;
 }
 
+
+// Determines if stone is "still" colliding with other stone
 bool Stone::isCollision(Stone stone1, Stone stone2)
 {
     float distance = stone1.getDistance(stone2);
@@ -272,6 +85,7 @@ bool Stone::isCollision(Stone stone1, Stone stone2)
     else
         return false;
 }
+
 
 // Below function finds new velocity for stone post collision
 sf::Vector2f Stone::findVelocityPostCollision(Stone otherStone)
@@ -293,11 +107,11 @@ sf::Vector2f Stone::findVelocityPostCollision(Stone otherStone)
     return newVelocity;
 }
 
+
+// Set new velocity of stone post collision
 void Stone::updatePostCollision(sf::Vector2f newVelocity)
 {
     speed = sqrt(newVelocity.x * newVelocity.x + newVelocity.y * newVelocity.y);
-
-    // Determine new direction
 
     // Determine direction for stones moving vertically (cannot use inverse tangent as horizontal component is 0)
     if(newVelocity.x == 0)
@@ -323,3 +137,115 @@ void Stone::updatePostCollision(sf::Vector2f newVelocity)
     spin = 0;
     setVelocity();
 }
+
+
+// Determines if stone collides with wall of rink
+bool Stone::isWallCollision(Stone stone_array[], const int SIZE, int& collisionInfo, sf::Vector2u windowSize)
+{
+    for(int i = 0; i < SIZE; i++)
+    {
+        if(stone_array[i].getStatus() && !stone_array[i].onRink(windowSize))
+        {
+            collisionInfo = i;
+            //cout << "Stone number: " << collisionInfo << endl;
+            return true;
+        }
+    }
+    return false;
+}
+
+// Determines if stone is on Rink
+bool Stone::onRink(sf::Vector2u windowSize)
+{
+    float x_position = getPosition().x;
+    float y_position = getPosition().y;
+
+    if(x_position - radius <= 0 || x_position + radius >= windowSize.x)
+    {
+        return false;
+    }
+    else if (y_position - radius <= 0 || y_position + radius >= windowSize.y)
+    {
+        return false;
+    }
+    else
+        return true;
+}
+
+
+void Stone::setInitialSpeed(float e)
+{
+    speed = e;
+}
+void Stone::setSpeed()
+{
+    if (speed - friction > 0)
+    {
+        speed -= friction;
+    }
+    else
+    {
+        speed = 0;
+    }
+}
+float Stone::getSpeed()
+{
+    return speed;
+}
+void Stone::setFriction(float f)
+{
+    friction = f;
+}
+
+
+void Stone::setInitialDirection(float d)
+{
+    direction = d;
+}
+void Stone::setDirection()
+{
+    direction += spin;;
+}
+float Stone::getDirection()
+{
+    return direction;
+}
+void Stone::setSpin(float s)
+{
+    spin = s;
+}
+float Stone::getSpin()
+{
+    return spin;
+}
+
+
+// Function that returns distance to another stone (used for collision detection)
+float Stone::getDistance(Stone s_o)
+{
+    x_dist = getPosition().x - s_o.getPosition().x;
+    y_dist = getPosition().y - s_o.getPosition().y;
+    tot_dist = sqrt((x_dist*x_dist)+(y_dist*y_dist));
+
+    return tot_dist;
+}
+
+
+void Stone::setVelocity()
+{
+    v.x= speed * cos(direction);
+    v.y= speed * sin(direction);
+}
+sf::Vector2f Stone::getVelocity()
+{
+    return v;
+}
+
+
+
+
+
+
+
+
+

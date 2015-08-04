@@ -12,6 +12,8 @@
 //         and determining the winner of each end and game.
 
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+#include <SFML/System.hpp>
 #include <stdlib.h>
 #include <math.h>
 #include <iostream>
@@ -45,6 +47,38 @@ int main()
     // If "Program_on" is true the menu window will continue to run regardless of whether a Curling game is ongoing.
     while (Program_on)
     {
+
+
+
+
+        sf::Music olympics_music;
+        if (!olympics_music.openFromFile("Olympics.ogg"))
+        {
+            return EXIT_FAILURE;
+        }
+
+        sf::Music winner_music;
+        if (!winner_music.openFromFile("Ta_Da.ogg"))
+        {
+            return EXIT_FAILURE;
+        }
+
+        sf::Music collision_music;
+        if (!collision_music.openFromFile("collide_short.ogg"))
+        {
+            return EXIT_FAILURE;
+        }
+
+        sf::Music sweeping_music;
+        if (!sweeping_music.openFromFile("sweeping_cont.ogg"))
+        {
+            return EXIT_FAILURE;
+        }
+
+
+        // Play the music
+        olympics_music.play();
+
         Curling game = menu_launch();
 
         // If the Curling instance return by the "menu_launch" function has a play type other than "0" (training mode)
@@ -133,7 +167,7 @@ int main()
         houseZoomLabel.setPosition(180,BOARD_HEIGHT + 13);
 
         // Invalid Throw Message
-        sf::Text message("Invalid Throw",font,15);
+        sf::Text message("Invalid Delivery",font,15);
         message.setPosition(1000,145);
         message.setColor(sf::Color::Red);
 
@@ -317,6 +351,9 @@ int main()
         // Start the game loop
         while (app.isOpen())
         {
+
+            //Turn off menu music
+            olympics_music.stop();
             // Process events
             sf::Event event;
             while (app.pollEvent(event))
@@ -576,6 +613,10 @@ int main()
                     // Set friction depending on whether user chooses to sweep stone by clicking
                     if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && game.checkPlay_Status(s_b,NUM_OF_STONES))
                     {
+                        if (sweeping_music.getStatus() != sf::SoundSource::Status::Playing)
+                        {
+                            sweeping_music.play();
+                        }
                         int x = game.getClostest_movingStone(s_b,sf::Mouse::getPosition(app),NUM_OF_STONES);
                         s_b[x].setFriction(0.8*5*9.81*.0168/60);
                         pos_sw_x = s_b[x].getPosition().x;
@@ -601,6 +642,7 @@ int main()
                     }
                     else
                     {
+                        sweeping_music.stop();
                         t_sweep[0]=sf::seconds(0.0);
                         t_sweep[1]=sf::seconds(0.0);
                         sweeping.setPosition(0.0,0.0);
@@ -616,8 +658,15 @@ int main()
 
                 // Check for stone collisions among stones
                 int collisionStones[2];
+                bool collide=false;
                 while(Stone::isCollision(s_b,NUM_OF_STONES,collisionStones, window_size))
                 {
+
+                    if (!collide)
+                    {
+                        collision_music.play();
+                        collide = true;
+                    }
                     // Find and set new velocities post collision for stones that collided
                     sf::Vector2f newStone1Velocity = s_b[collisionStones[0]].findVelocityPostCollision(s_b[collisionStones[1]]);
                     sf::Vector2f newStone2Velocity = s_b[collisionStones[1]].findVelocityPostCollision(s_b[collisionStones[0]]);
@@ -633,6 +682,7 @@ int main()
                         s_b[collisionStones[1]].makeMove();
                     }
                 }
+
 
                 // Check for wall collisions
                 int stoneNumber;
@@ -712,6 +762,7 @@ int main()
                 // If game is over, declare winner and then return to menu after pause
                 if(game.isGameOver())
                 {
+
                     hintsOn = false;
                     if(game.getTeam_A_Points() > game.getTeam_B_Points())
                         winning_message.setString(game.getTeamAName() + " Wins!");
@@ -723,6 +774,7 @@ int main()
 
                     if(clockCounter == 0)
                     {
+                        winner_music.play();
                         t3=myclock.restart();
                         clockCounter++;
                     }

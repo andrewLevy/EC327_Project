@@ -317,12 +317,12 @@ int main()
 
         // Set settings for hints text box
         sf::Vector2f hintsBoxLeftCorner (sb[0].getPosition().x - sb[0].getLocalBounds().width / 2, 290);
-        hintsBox.setSize(sf::Vector2f(340,245));
+        hintsBox.setSize(sf::Vector2f(340,280));
         hintsBox.setPosition(hintsBoxLeftCorner);
         hintsBox.setOutlineColor(sf::Color::Black);
         hintsBox.setOutlineThickness(-1);
 
-        string hints("Tips: \n\n - Adjust speed with left/right arrows \n\n - Adjust direction with up/down arrows\n\n - Adjust curvature down/up with \n'F'/'G' keys \n\n - Sweep individual stone by clicking \nstone on top board");
+        string hints("Tips: \n\n - Adjust speed with left/right arrows \n\n - Adjust direction with up/down arrows\n\n - Adjust curvature down/up with \n'A'/'Z' keys \n\n - Launch Stone with Enter or Space \n\n - Sweep individual stone by clicking \nstone on top board");
         hintsText.setString(hints);
         hintsText.setFont(font);
         hintsText.setCharacterSize(18);
@@ -414,9 +414,9 @@ int main()
                 // Draw and rotate rotation icon per magnitude of spin chosen by user
                 // User sets magnitude and direction of spin by number of times "F" or "J" keys are pressed
                 // "F" key produces a downward curvature and "J" produces and upward curvature
-                if(sf::Keyboard::isKeyPressed(sf::Keyboard::J))
+                if(sf::Keyboard::isKeyPressed(sf::Keyboard::A))
                 {
-                    while(sf::Keyboard::isKeyPressed(sf::Keyboard::J));
+                    while(sf::Keyboard::isKeyPressed(sf::Keyboard::A));
                     if(spinCounter <= 3)
                     {
                         spinCounter++;
@@ -424,9 +424,9 @@ int main()
                         counterClockwiseArrow.setPosition(counterClockwiseArrow.getPosition().x, BOARD_HEIGHT / 2 - spinCounter * 10);
                     }
                 }
-                else if(sf::Keyboard::isKeyPressed(sf::Keyboard::F))
+                else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
                 {
-                    while(sf::Keyboard::isKeyPressed(sf::Keyboard::F));
+                    while(sf::Keyboard::isKeyPressed(sf::Keyboard::Z));
                     if(spinCounter >= -3)
                     {
                         spinCounter--;
@@ -574,8 +574,8 @@ int main()
                     }
                 }
 
-                // If user presses answer, set speed, direction, and spin fields of current stone
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && !game.checkPlay_Status(s_b,NUM_OF_STONES))
+                // If user presses Enter/Space, set speed, direction, and spin fields of current stone
+                if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Return) || (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))) && !game.checkPlay_Status(s_b,NUM_OF_STONES))
                 {
                     lastThrow = true;
                     if (game.getTurnNumber() < NUM_OF_STONES)
@@ -899,21 +899,6 @@ Curling menu_launch()
     backButton.setColor(sf::Color::Black);
     backButton.setOrigin(backButton.getLocalBounds().width / 2, backButton.getLocalBounds().height / 2);
     backButton.setPosition(playNowText.getPosition().x - playNowText.getLocalBounds().width / 2 - 175,playNowText.getPosition().y);
-
-    /*sf::Texture goPlay_pic;
-    goPlay_pic.loadFromFile("Play_now_button.png");
-
-    sf::Sprite goPlay(goPlay_pic);
-    goPlay.setPosition(800,500);
-
-    sf::Texture backToMenu_pic;
-    backToMenu_pic.loadFromFile("back_to_menu.png");
-    //if (!backToMenu_pic.loadFromFile("back_to_menu.png"))
-    //{
-    //  return EXIT_FAILURE;
-    //}
-    sf::Sprite backToMenu(backToMenu_pic);
-    backToMenu.setPosition(1100,10);*/
 
     sf::Clock introClock;
     sf::Time introTime;

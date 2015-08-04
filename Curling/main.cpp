@@ -322,7 +322,7 @@ int main()
         hintsBox.setOutlineColor(sf::Color::Black);
         hintsBox.setOutlineThickness(-1);
 
-        string hints("Tips: \n\n - Adjust speed with left/right arrows \n\n - Adjust direction with up/down arrows\n\n - Adjust curvature down/up with \n'A'/'Z' keys \n\n - Launch Stone with Enter or Space \n\n - Sweep individual stone by clicking \nstone on top board");
+        string hints("Tips: \n\n - Adjust speed with left/right arrows \n\n - Adjust direction with up/down arrows\n\n - Adjust curvature up/down with \n'A'/'Z' keys \n\n - Launch Stone with Enter or Space \n\n - Sweep individual stone by clicking \nstone on top board");
         hintsText.setString(hints);
         hintsText.setFont(font);
         hintsText.setCharacterSize(18);

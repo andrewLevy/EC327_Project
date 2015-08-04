@@ -38,8 +38,10 @@
 	<math.h>
 	<iostream>
 
-1438444342 source:/home/levya/Desktop/EC327_Project/Curling/main.cpp
+1438711600 source:/home/levya/Desktop/EC327_Project/Curling/main.cpp
 	<SFML/Graphics.hpp>
+	<SFML/Audio.hpp>
+	<SFML/System.hpp>
 	<stdlib.h>
 	<math.h>
 	<iostream>
@@ -48,17 +50,17 @@
 	<vector>
 	<string>
 
-1438397121 /home/levya/Desktop/EC327_Project/Curling/include/Stone.h
+1438711600 /home/levya/Desktop/EC327_Project/Curling/include/Stone.h
 	<SFML/Graphics.hpp>
 	<string.h>
 
-1438397121 source:/home/levya/Desktop/EC327_Project/Curling/src/Stone.cpp
+1438711600 source:/home/levya/Desktop/EC327_Project/Curling/src/Stone.cpp
 	"Stone.h"
 	<stdlib.h>
 	<math.h>
 	<iostream>
 
-1438402758 source:/home/levya/Desktop/EC327_Project/Curling/Curling.cpp
+1438711600 source:/home/levya/Desktop/EC327_Project/Curling/Curling.cpp
 	"Curling.h"
 	<SFML/Graphics.hpp>
 	"Stone.h"
@@ -68,7 +70,7 @@
 	<string>
 	<cmath>
 
-1438403424 /home/levya/Desktop/EC327_Project/Curling/Curling.h
+1438711600 /home/levya/Desktop/EC327_Project/Curling/Curling.h
 	<vector>
 	<SFML/Graphics.hpp>
 	"Stone.h"
